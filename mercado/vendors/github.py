@@ -13,7 +13,7 @@ class GitHubProduct:
     # render_function: Callable[[str, str, str], str]
 
 
-class GitHubTools(ToolVendor):
+class GitHub(ToolVendor):
     def __init__(self):
         self.products: dict[str, GitHubProduct] = {
             'kind': GitHubProduct('kind', repository='kubernetes-sigs/kind'),
@@ -35,6 +35,9 @@ class GitHubTools(ToolVendor):
 
         res = requests.get(
             f'https://api.github.com/repos/{self.products[product].repository}/releases/tags/{tag}')
+        if res.status_code == 404:
+            raise ValueError(f'version {tag} was not found for {product}')
+
         res.raise_for_status()
         return res.json()
 
@@ -46,7 +49,7 @@ class GitHubTools(ToolVendor):
                 return asset['browser_download_url']
 
     def get_supported_products(self) -> list[str]:
-        return list(self.products.keys())
+        return sorted(list(self.products.keys()))
 
     def get_release_by_version(self, name: str, version: str, os: str, arch: str) -> Product:
         res = self._get_release_by_tag(name, version)

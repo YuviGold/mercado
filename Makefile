@@ -4,7 +4,7 @@ verify: format lint test
 
 lint:
 	python -m flake8 --max-line-length 120 mercado
-	git diff --exit-code
+	git diff --shortstat --exit-code
 
 format:
 	find mercado -name '*.py' -exec autopep8 -i {} \;

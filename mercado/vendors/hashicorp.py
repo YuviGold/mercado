@@ -4,7 +4,7 @@ from ..utils import is_valid_architecture
 from .vendor import Product, ToolVendor
 
 
-class HashiCorpTools(ToolVendor):
+class Hashicorp(ToolVendor):
     def __init__(self):
         # TODO: Need to run e2e tests that all products actually available
         # self._products = self._get_hashicorp_products()
@@ -39,7 +39,7 @@ class HashiCorpTools(ToolVendor):
                 return item['url']
 
     def get_supported_products(self) -> list[str]:
-        return self._products
+        return sorted(self._products)
 
     def get_release_by_version(self, name: str, version: str, os: str, arch: str) -> Product:
         res = self._get_hashicorp_product_releases(name, version)
