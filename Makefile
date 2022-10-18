@@ -10,7 +10,7 @@ format:
 	find mercado -name '*.py' -exec autopep8 -i {} \;
 
 test:
-	echo 'test pytest'
+	python -m pytest --log-cli-level=info -s --verbose $(or ${TEST},tests) -k $(or ${TEST_FUNC},'')
 
 install: clean dist
 	pip install --force-reinstall ./dist/mercado-*.whl

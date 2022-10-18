@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 import requests
 
-from ..utils import is_valid_architecture
+from ..utils import choose_url, is_valid_architecture
 from .vendor import Product, ToolVendor
 
 
@@ -42,11 +42,15 @@ class GitHub(ToolVendor):
         return res.json()
 
     def _get_asset_url(self, name: str, os: str, arch: str, assets: list[dict[str]]) -> str:
+        valid_assets_urls = []
+
         for asset in assets:
             # TODO: Currently it only validates os and arch within the name,
             # in case it would require manipulation - the render_function will return
             if os in asset['name'] and is_valid_architecture(expected=arch, actual=asset['name']):
-                return asset['browser_download_url']
+                valid_assets_urls.append(asset['browser_download_url'])
+
+        return choose_url(valid_assets_urls)
 
     def get_supported_products(self) -> list[str]:
         return sorted(list(self.products.keys()))

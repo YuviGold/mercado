@@ -1,6 +1,7 @@
 import logging
 import platform
 from typing import Optional
+from os import environ
 
 from rich.console import Console
 from rich.logging import RichHandler
@@ -53,9 +54,12 @@ def install_product(names: list[str],
 
     for name in names:
         release = manager.get_release(name, os, arch)
+        logging.debug(f"'{name}' was found at {release.url}")
 
         if not dry_run:
             download(name, release.url)
+            console.print(
+                f":thumbs_up: '{name}' version {release.version} is installed")
 
 
 @app.command('is-latest', help='Check if the current version is the latest one')
@@ -75,7 +79,8 @@ def is_latest(name: str):
 
 
 def init_logger():
-    logging.basicConfig(level=logging.INFO,
+    LOGLEVEL = environ.get('LOGLEVEL', 'INFO').upper()
+    logging.basicConfig(level=LOGLEVEL,
                         format='%(message)s',
                         handlers=[RichHandler()])
 

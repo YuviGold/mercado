@@ -1,6 +1,6 @@
 import requests
 
-from ..utils import is_valid_architecture
+from ..utils import choose_url, is_valid_architecture
 from .vendor import Product, ToolVendor
 
 
@@ -22,6 +22,9 @@ class Hashicorp(ToolVendor):
         if version:
             res = requests.get(
                 f'https://api.releases.hashicorp.com/v1/releases/{product}/{version}?license_class=oss')
+            if res.status_code == 404:
+                raise ValueError(
+                    f'version {version} was not found for {product}')
         else:
             res = requests.get(
                 f'https://api.releases.hashicorp.com/v1/releases/{product}?license_class=oss')
@@ -34,9 +37,13 @@ class Hashicorp(ToolVendor):
         return data[0]
 
     def _get_build_url(self, os: str, arch: str, builds: list[dict[str, str]]) -> str:
+        valid_assets_urls = []
+
         for item in builds:
             if os == item['os'] and is_valid_architecture(expected=arch, actual=item['arch']):
-                return item['url']
+                valid_assets_urls.append(item['url'])
+
+        return choose_url(valid_assets_urls)
 
     def get_supported_products(self) -> list[str]:
         return sorted(self._products)
