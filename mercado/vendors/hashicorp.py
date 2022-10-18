@@ -8,7 +8,7 @@ class Hashicorp(ToolVendor):
     def __init__(self):
         # TODO: Need to run e2e tests that all products actually available
         # self._products = self._get_hashicorp_products()
-        self._products = ['vagrant', 'vault', 'terraform']
+        self._products = ['vagrant', 'vault', 'terraform', 'packer', 'waypoint']
 
     def _get_hashicorp_products(self):
         res = requests.get('https://api.releases.hashicorp.com/v1/products')
@@ -20,14 +20,11 @@ class Hashicorp(ToolVendor):
             raise ValueError(product)
 
         if version:
-            res = requests.get(
-                f'https://api.releases.hashicorp.com/v1/releases/{product}/{version}?license_class=oss')
+            res = requests.get(f'https://api.releases.hashicorp.com/v1/releases/{product}/{version}?license_class=oss')
             if res.status_code == 404:
-                raise ValueError(
-                    f'version {version} was not found for {product}')
+                raise ValueError(f'version {version} was not found for {product}')
         else:
-            res = requests.get(
-                f'https://api.releases.hashicorp.com/v1/releases/{product}?license_class=oss')
+            res = requests.get(f'https://api.releases.hashicorp.com/v1/releases/{product}?license_class=oss')
         res.raise_for_status()
         return res.json()
 
@@ -52,8 +49,7 @@ class Hashicorp(ToolVendor):
         res = self._get_hashicorp_product_releases(name, version)
         url = self._get_build_url(os, arch, res['builds'])
         if not url:
-            raise ValueError(
-                f'There is no available artifact {name} for {os=}, {arch=}, {version=}')
+            raise ValueError(f'There is no available artifact {name} for {os=}, {arch=}, {version=}')
 
         return Product(name, os, arch, version, url)
 
@@ -62,7 +58,6 @@ class Hashicorp(ToolVendor):
         version = res['version']
         url = self._get_build_url(os, arch, res['builds'])
         if not url:
-            raise ValueError(
-                f'There is no available artifact {name} for {os=}, {arch=} for latest version {version=}')
+            raise ValueError(f'There is no available artifact {name} for {os=}, {arch=} for latest version {version=}')
 
         return Product(name, os, arch, version, url)

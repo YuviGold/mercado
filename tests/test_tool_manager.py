@@ -15,5 +15,4 @@ def test_get_latest_release(toolmanager: ToolManager, os: str, arch: str):
 
 def test_get_release_invalid_version(toolmanager: ToolManager, os, arch):
     with pytest.raises(ValueError):
-        toolmanager.get_release(
-            f"{toolmanager._vendors[0].get_supported_products()[0]}@invalid", os, arch)
+        toolmanager.get_release(f"{toolmanager._vendors[0].get_supported_products()[0]}@invalid", os, arch)

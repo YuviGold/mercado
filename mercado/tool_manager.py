@@ -13,8 +13,7 @@ class ToolManager:
         for vendor in self._vendors:
             if name in vendor.get_supported_products():
                 return vendor
-        raise ValueError(
-            f"Tool '{name}' is not supported. Check the full supported tools with 'marcado list'")
+        raise ValueError(f"Tool '{name}' is not supported. Check the full supported tools with 'marcado list'")
 
     def get_supported_products(self) -> list[tuple[str, list[str]]]:
         for vendor in self._vendors:
@@ -27,14 +26,11 @@ class ToolManager:
             name = name[:name.index('@')]
 
         vendor = self._get_vendor_by_product(name)
-        logging.info(
-            f"'{name}' is available by the '{vendor.__class__.__name__}' vendor")
+        logging.info(f"'{name}' is available by the '{vendor.__class__.__name__}' vendor")
 
         if version:
-            logging.info(
-                f"Looking for '{name}' with version {version} for {os} and {arch}")
+            logging.info(f"Looking for '{name}' with version {version} for {os} and {arch}")
             return vendor.get_release_by_version(name, version, os, arch)
         else:
-            logging.info(
-                f"Looking for the latest version of '{name}' for {os} and {arch}")
+            logging.info(f"Looking for the latest version of '{name}' for {os} and {arch}")
             return vendor.get_latest_release(name, os, arch)

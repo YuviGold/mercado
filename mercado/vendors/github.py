@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from os import environ
 import requests
 
 from ..utils import choose_url, is_valid_architecture
@@ -18,14 +19,28 @@ class GitHub(ToolVendor):
         self.products: dict[str, GitHubProduct] = {
             'kind': GitHubProduct('kind', repository='kubernetes-sigs/kind'),
             'gh': GitHubProduct('gh', repository='cli/cli'),
+            'k3d': GitHubProduct('k3d', repository='k3d-io/k3d'),
+            'cosign': GitHubProduct('cosign', repository='sigstore/cosign'),
+            # 'kustomize': GitHubProduct('kustomize', repository='kubernetes-sigs/kustomize'),
         }
+
+        self._token = self._get_local_token()
+
+    def _get_local_token(self):
+        # TODO: Make more sophisticated
+        return environ.get('GITHUB_TOKEN')
+
+    def _session(self) -> requests.Session:
+        s = requests.Session()
+        if self._token:
+            s.headers = {'Authorization': 'Bearer ' + self._token}
+        return s
 
     def _get_latest_release(self, product: str):
         if product not in self.products:
             raise ValueError(product)
 
-        res = requests.get(
-            f'https://api.github.com/repos/{self.products[product].repository}/releases/latest')
+        res = self._session().get(f'https://api.github.com/repos/{self.products[product].repository}/releases/latest')
         res.raise_for_status()
         return res.json()
 
@@ -33,7 +48,7 @@ class GitHub(ToolVendor):
         if product not in self.products:
             raise ValueError(product)
 
-        res = requests.get(
+        res = self._session().get(
             f'https://api.github.com/repos/{self.products[product].repository}/releases/tags/{tag}')
         if res.status_code == 404:
             raise ValueError(f'version {tag} was not found for {product}')
@@ -41,7 +56,7 @@ class GitHub(ToolVendor):
         res.raise_for_status()
         return res.json()
 
-    def _get_asset_url(self, name: str, os: str, arch: str, assets: list[dict[str]]) -> str:
+    def _get_asset_url(self, os: str, arch: str, assets: list[dict[str]]) -> str:
         valid_assets_urls = []
 
         for asset in assets:
@@ -57,19 +72,17 @@ class GitHub(ToolVendor):
 
     def get_release_by_version(self, name: str, version: str, os: str, arch: str) -> Product:
         res = self._get_release_by_tag(name, version)
-        url = self._get_asset_url(name, os, arch, res['assets'])
+        url = self._get_asset_url(os, arch, res['assets'])
         if not url:
-            raise ValueError(
-                f'There is no available artifact {name} for {os=}, {arch=}, {version=}')
+            raise ValueError(f'There is no available artifact {name} for {os=}, {arch=}, {version=}')
 
         return Product(name, os, arch, res['tag_name'], url)
 
     def get_latest_release(self, name: str, os: str, arch: str) -> Product:
         res = self._get_latest_release(name)
         version = res['tag_name']
-        url = self._get_asset_url(name, os, arch, res['assets'])
+        url = self._get_asset_url(os, arch, res['assets'])
         if not url:
-            raise ValueError(
-                f'There is no available artifact {name} for {os=}, {arch=} for latest version {version=}')
+            raise ValueError(f'There is no available artifact {name} for {os=}, {arch=} for latest version {version=}')
 
         return Product(name, os, arch, res['tag_name'], url)

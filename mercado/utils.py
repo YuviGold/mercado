@@ -14,8 +14,7 @@ from rich.progress import Progress
 
 MATRIX_X86_64 = ('x86_64', 'amd64')
 CHUNK_SIZE = 1024
-SUPPORTED_ARCHIVE_FORMATS = sum([format[1]
-                                for format in get_unpack_formats()], [])
+SUPPORTED_ARCHIVE_FORMATS = sum([format[1] for format in get_unpack_formats()], [])
 
 
 def is_valid_architecture(expected: str, actual: str) -> bool:
@@ -45,8 +44,12 @@ def get_tool_version(path: Path) -> str:
     if not which(path):
         raise FileNotFoundError(path)
 
-    output = subprocess.check_output(
-        f'{path} --version'.split()).decode().strip()
+    try:
+        output = subprocess.check_output(f'{path} --version'.split(), stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError:
+        output = subprocess.check_output(f'{path} version'.split(), stderr=subprocess.STDOUT)
+
+    output = output.decode().strip()
     match = re.search(
         r'([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?', output)
     return match[0]
@@ -104,8 +107,7 @@ def extract_file_from_archive(path: Path, file_name: str) -> Path:
     logging.info(f"Unpacking {path} to {unpack_dest}")
     unpack_archive(path, extract_dir=unpack_dest)
     matches = glob(f"{unpack_dest}/**/{file_name}", recursive=True)
-    assert len(matches) == 1, \
-        f"There should be one file in the archive with the name {file_name}"
+    assert len(matches) == 1, f"There should be one file in the archive with the name {file_name}"
     return matches[0]
 
 
@@ -115,13 +117,15 @@ def choose_url(urls: list[str]) -> str:
     urls = list(filter(lambda url: all(
         [substr not in url for substr in DROP_NAMES]), urls))
 
-    # Prefer an archive if available
+    # Priority #1 - without suffix
+    for url in urls:
+        if not Path(url).suffix:
+            return url
+
+    # Priority #2 - an archive if available
     for url in urls:
         if is_archive(url):
             return url
 
-    if len(urls) > 1:
-        logging.warning(
-            "There are several valid urls: {urls}, taking the first one. Please file a bug")
-
+    assert len(urls) == 1, f"There are several valid urls: {urls}, taking the first one. Please file a bug"
     return urls[0]
