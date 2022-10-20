@@ -1,6 +1,6 @@
-import requests
+from http import HTTPStatus
 
-from ..utils import choose_url, is_valid_architecture
+from ..utils import choose_url, create_session, is_valid_architecture
 from .vendor import Product, ToolVendor
 
 
@@ -11,7 +11,7 @@ class Hashicorp(ToolVendor):
         self._products = ['vagrant', 'vault', 'terraform', 'packer', 'waypoint']
 
     def _get_hashicorp_products(self):
-        res = requests.get('https://api.releases.hashicorp.com/v1/products')
+        res = create_session().get('https://api.releases.hashicorp.com/v1/products')
         res.raise_for_status()
         return res.json()
 
@@ -20,11 +20,12 @@ class Hashicorp(ToolVendor):
             raise ValueError(product)
 
         if version:
-            res = requests.get(f'https://api.releases.hashicorp.com/v1/releases/{product}/{version}?license_class=oss')
-            if res.status_code == 404:
+            res = create_session().get(
+                f'https://api.releases.hashicorp.com/v1/releases/{product}/{version}?license_class=oss')
+            if res.status_code == HTTPStatus.NOT_FOUND.value:
                 raise ValueError(f'version {version} was not found for {product}')
         else:
-            res = requests.get(f'https://api.releases.hashicorp.com/v1/releases/{product}?license_class=oss')
+            res = create_session().get(f'https://api.releases.hashicorp.com/v1/releases/{product}?license_class=oss')
         res.raise_for_status()
         return res.json()
 

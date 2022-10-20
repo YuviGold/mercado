@@ -1,9 +1,10 @@
 from dataclasses import dataclass
-
+from http import HTTPStatus
 from os import environ
-import requests
 
-from ..utils import choose_url, is_valid_architecture
+from requests import Session
+
+from ..utils import choose_url, create_session, is_valid_architecture
 from .vendor import Product, ToolVendor
 
 
@@ -30,8 +31,8 @@ class GitHub(ToolVendor):
         # TODO: Make more sophisticated
         return environ.get('GITHUB_TOKEN')
 
-    def _session(self) -> requests.Session:
-        s = requests.Session()
+    def _session(self) -> Session:
+        s = create_session()
         if self._token:
             s.headers = {'Authorization': 'Bearer ' + self._token}
         return s
@@ -50,7 +51,7 @@ class GitHub(ToolVendor):
 
         res = self._session().get(
             f'https://api.github.com/repos/{self.products[product].repository}/releases/tags/{tag}')
-        if res.status_code == 404:
+        if res.status_code == HTTPStatus.NOT_FOUND.value:
             raise ValueError(f'version {tag} was not found for {product}')
 
         res.raise_for_status()

@@ -2,18 +2,24 @@ import logging
 import re
 import stat
 import subprocess
+from functools import partial
 from glob import glob
+from http import HTTPStatus
 from os.path import basename
 from pathlib import Path
 from shutil import copy, get_unpack_formats, unpack_archive, which
 from tempfile import gettempdir
 
-import requests
 from humanize import naturalsize
+from requests import Session
+from requests.adapters import HTTPAdapter
 from rich.progress import Progress
+from urllib3 import Retry
 
 MATRIX_X86_64 = ('x86_64', 'amd64')
 CHUNK_SIZE = 1024
+REQUEST_MAX_TIMEOUT = 10
+STREAM_MAX_TIMEOUT = 300
 SUPPORTED_ARCHIVE_FORMATS = sum([format[1] for format in get_unpack_formats()], [])
 
 
@@ -70,7 +76,7 @@ def is_tool_available_in_path(name: str) -> bool:
 def download(name: str, url: str):
     logging.debug(f'Download {url}')
 
-    with requests.get(url, stream=True) as r:
+    with create_session().get(url, stream=True, timeout=STREAM_MAX_TIMEOUT) as r:
         total_length = int(r.headers.get('content-length', 0))
 
         temp_file = Path(gettempdir()) / basename(url)
@@ -109,6 +115,24 @@ def extract_file_from_archive(path: Path, file_name: str) -> Path:
     matches = glob(f"{unpack_dest}/**/{file_name}", recursive=True)
     assert len(matches) == 1, f"There should be one file in the archive with the name {file_name}"
     return matches[0]
+
+
+def create_session():
+    session = Session()
+    retries = Retry(total=5,
+                    backoff_factor=1,
+                    status_forcelist=[
+                        HTTPStatus.TOO_MANY_REQUESTS.value,
+                        HTTPStatus.INTERNAL_SERVER_ERROR.value,
+                        HTTPStatus.BAD_GATEWAY.value,
+                        HTTPStatus.SERVICE_UNAVAILABLE.value,
+                        HTTPStatus.GATEWAY_TIMEOUT.value,
+                    ])
+    adapter = HTTPAdapter(max_retries=retries)
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+    session.request = partial(session.request, timeout=REQUEST_MAX_TIMEOUT)
+    return session
 
 
 def choose_url(urls: list[str]) -> str:
