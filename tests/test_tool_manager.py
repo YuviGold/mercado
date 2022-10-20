@@ -7,10 +7,10 @@ def test_get_release_invalid_product(toolmanager: ToolManager, os: str, arch: st
         toolmanager.get_release("invalid", os, arch)
 
 
-def test_get_latest_release(toolmanager: ToolManager, os: str, arch: str):
-    for _, products in toolmanager.get_supported_products():
-        for product in products:
-            assert toolmanager.get_release(product, os, arch)
+@pytest.mark.parametrize("product", [p for _, products in ToolManager().get_supported_products() for p in products])
+def test_get_latest_release(toolmanager: ToolManager, product, os: str, arch: str):
+    release = toolmanager.get_release(product, os, arch)
+    assert toolmanager.get_release(f"{product}@{release.version}", os, arch) == release
 
 
 def test_get_release_invalid_version(toolmanager: ToolManager, os, arch):

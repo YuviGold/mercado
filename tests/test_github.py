@@ -1,13 +1,5 @@
 import pytest
-from mercado.vendors.github import GitHub
 from mercado.vendors.vendor import ToolVendor
-
-
-@pytest.mark.parametrize("product", GitHub().get_supported_products())
-def test_get_release_by_version(github: ToolVendor, product: str, os: str, arch: str):
-    release = github.get_latest_release(product, os, arch)
-    assert release
-    assert github.get_release_by_version(product, release.version, os, arch) == release
 
 
 def test_get_latest_release_invalid_product(github: ToolVendor, os: str, arch: str):

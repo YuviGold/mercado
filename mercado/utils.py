@@ -9,6 +9,7 @@ from os.path import basename
 from pathlib import Path
 from shutil import copy, get_unpack_formats, unpack_archive, which
 from tempfile import gettempdir
+from typing import Callable
 
 from humanize import naturalsize
 from requests import Session
@@ -16,7 +17,7 @@ from requests.adapters import HTTPAdapter
 from rich.progress import Progress
 from urllib3 import Retry
 
-MATRIX_X86_64 = ('x86_64', 'amd64')
+MATRIX_X86_64 = ('x86_64', 'amd64', '64bit')
 CHUNK_SIZE = 1024
 REQUEST_MAX_TIMEOUT = 10
 STREAM_MAX_TIMEOUT = 300
@@ -29,7 +30,7 @@ def is_valid_architecture(expected: str, actual: str) -> bool:
     '''
     if expected in MATRIX_X86_64:
         for arch in MATRIX_X86_64:
-            if arch in actual:
+            if re.search(arch, actual, re.IGNORECASE):
                 return True
 
     return expected in actual
@@ -81,8 +82,7 @@ def download(name: str, url: str):
 
         temp_file = Path(gettempdir()) / basename(url)
 
-        logging.info(
-            f"Downloading '{name}' to {temp_file} (size: {naturalsize(total_length)})")
+        logging.info(f"Downloading '{name}' to {temp_file} (size: {naturalsize(total_length)})")
 
         with temp_file.open('wb') as file, Progress() as progress:
             task = progress.add_task("Downloading...", total=total_length)
@@ -136,20 +136,34 @@ def create_session():
 
 
 def choose_url(urls: list[str]) -> str:
-    DROP_NAMES = ('checksum', 'sha')
+    DROP_NAMES = ('checksum', 'sha', '.sig', '.pem', '.sbom', 'key')
 
-    urls = list(filter(lambda url: all(
-        [substr not in url for substr in DROP_NAMES]), urls))
+    urls = list(filter(lambda url: all([substr not in url for substr in DROP_NAMES]), urls))
 
     # Priority #1 - without suffix
-    for url in urls:
-        if not Path(url).suffix:
-            return url
+    if url := _search_url(urls, no_suffix):
+        return url
 
     # Priority #2 - an archive if available
-    for url in urls:
-        if is_archive(url):
-            return url
+    if url := _search_url(urls, is_archive):
+        return url
 
-    assert len(urls) == 1, f"There are several valid urls: {urls}, taking the first one. Please file a bug"
-    return urls[0]
+    raise ValueError("Could not find a valid URL inside {urls}. Please file a bug")
+
+
+def no_suffix(item: str) -> bool:
+    return not Path(item).suffix
+
+
+def _search_url(urls: list[str], func: Callable[[str], bool]) -> str:
+    ls = []
+
+    for url in urls:
+        if func(url):
+            ls.append(url)
+    if len(ls) > 1:
+        raise ValueError(f"There are several valid urls: {ls} for matcher {func.__name__}, Please file a bug")
+    if len(ls) == 1:
+        return ls[0]
+
+    return None

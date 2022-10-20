@@ -58,8 +58,7 @@ def install_product(names: list[str],
 
         if not dry_run:
             download(name, release.url)
-            console.print(
-                f":thumbs_up: '{name}' version {release.version} is installed")
+            console.print(f":thumbs_up: '{name}' version {release.version} is installed")
 
 
 @app.command('is-latest', help='Check if the current version is the latest one')
@@ -71,11 +70,9 @@ def is_latest(name: str):
     latest_version = manager.get_release(
         name, platform.system().lower(), platform.machine()).version
     if local_version not in latest_version:
-        console.print(
-            f"'{name}' version {latest_version} is available! (current: {local_version})")
+        console.print(f"'{name}' version {latest_version} is available! (current: {local_version})")
     else:
-        console.print(
-            f":thumbs_up: You have the latest version of '{name}' ({local_version})")
+        console.print(f":thumbs_up: You have the latest version of '{name}' ({local_version})")
 
 
 def init_logger():
