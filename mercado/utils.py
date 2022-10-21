@@ -67,11 +67,7 @@ def local_path(name: str) -> Path:
 
 
 def is_tool_available_in_path(name: str) -> bool:
-    try:
-        subprocess.check_output(f'which {name}'.split())
-        return True
-    except subprocess.CalledProcessError:
-        return False
+    return which(name) is not None
 
 
 def download(name: str, url: str):
@@ -148,7 +144,7 @@ def choose_url(urls: list[str]) -> str:
     if url := _search_url(urls, is_archive):
         return url
 
-    raise ValueError("Could not find a valid URL inside {urls}. Please file a bug")
+    raise ValueError(f"Could not find a valid URL inside {urls}. Please file a bug")
 
 
 def no_suffix(item: str) -> bool:

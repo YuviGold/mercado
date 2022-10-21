@@ -1,37 +1,39 @@
 from http import HTTPStatus
 
 from ..utils import choose_url, create_session, is_valid_architecture
-from .vendor import Product, ToolVendor
+from .vendor import Artifact, Tool, ToolVendor
 
 
 class Hashicorp(ToolVendor):
     def __init__(self):
-        # TODO: Need to run e2e tests that all products actually available
-        # self._products = self._get_hashicorp_products()
-        self._products = ['vagrant', 'vault', 'terraform', 'packer', 'waypoint']
+        self._products = self._get_hashicorp_products()
+
+    @staticmethod
+    def get_name() -> str:
+        return 'hashicorp'
 
     def _get_hashicorp_products(self):
         res = create_session().get('https://api.releases.hashicorp.com/v1/products')
         res.raise_for_status()
         return res.json()
 
-    def _get_hashicorp_product_releases(self, product: str, version: str = ''):
-        if product not in self._products:
-            raise ValueError(product)
+    def _get_hashicorp_product_releases(self, name: str, version: str = ''):
+        if name not in self._products:
+            raise ValueError(name)
 
         if version:
             res = create_session().get(
-                f'https://api.releases.hashicorp.com/v1/releases/{product}/{version}?license_class=oss')
+                f'https://api.releases.hashicorp.com/v1/releases/{name}/{version}?license_class=oss')
             if res.status_code == HTTPStatus.NOT_FOUND.value:
-                raise ValueError(f'version {version} was not found for {product}')
+                raise ValueError(f'version {version} was not found for {name}')
         else:
-            res = create_session().get(f'https://api.releases.hashicorp.com/v1/releases/{product}?license_class=oss')
+            res = create_session().get(f'https://api.releases.hashicorp.com/v1/releases/{name}?license_class=oss')
         res.raise_for_status()
         return res.json()
 
-    def _get_hashicorp_latest_release(self, product: str):
+    def _get_hashicorp_latest_release(self, name: str):
         # Results are ordered by release creation time from newest to oldest
-        data = self._get_hashicorp_product_releases(product)
+        data = self._get_hashicorp_product_releases(name)
         return data[0]
 
     def _get_build_url(self, os: str, arch: str, builds: list[dict[str, str]]) -> str:
@@ -43,22 +45,20 @@ class Hashicorp(ToolVendor):
 
         return choose_url(valid_assets_urls)
 
-    def get_supported_products(self) -> list[str]:
-        return sorted(self._products)
-
-    def get_release_by_version(self, name: str, version: str, os: str, arch: str) -> Product:
-        res = self._get_hashicorp_product_releases(name, version)
+    def get_release_by_version(self, tool: Tool, version: str, os: str, arch: str) -> Artifact:
+        res = self._get_hashicorp_product_releases(tool.name, version)
         url = self._get_build_url(os, arch, res['builds'])
         if not url:
-            raise ValueError(f'There is no available artifact {name} for {os=}, {arch=}, {version=}')
+            raise ValueError(f'There is no available artifact {tool.name} for {os=}, {arch=}, {version=}')
 
-        return Product(name, os, arch, version, url)
+        return Artifact(tool.name, os, arch, version, url)
 
-    def get_latest_release(self, name: str, os: str, arch: str) -> Product:
-        res = self._get_hashicorp_latest_release(name)
+    def get_latest_release(self, tool: Tool, os: str, arch: str) -> Artifact:
+        res = self._get_hashicorp_latest_release(tool.name)
         version = res['version']
         url = self._get_build_url(os, arch, res['builds'])
         if not url:
-            raise ValueError(f'There is no available artifact {name} for {os=}, {arch=} for latest version {version=}')
+            raise ValueError(
+                f'There is no available artifact {tool.name} for {os=}, {arch=} for latest version {version=}')
 
-        return Product(name, os, arch, version, url)
+        return Artifact(tool.name, os, arch, version, url)
