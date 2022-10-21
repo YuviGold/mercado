@@ -1,8 +1,19 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from enum import Enum
+
+
+class Label(Enum):
+    K8S = "k8s"
+    DOCS = "docs"
+    SECURITY = "security"
+    IAC = "iac"
+    VCS = "vcs"
+    VIRT = "virt"
+    CICD = "ci/cd"
 
 
 @dataclass
-class Product:
+class Artifact:
     name: str
     os: str
     arch: str
@@ -10,12 +21,19 @@ class Product:
     url: str = ''
 
 
+@dataclass
+class Tool:
+    name: str
+    labels: list[Label] = field(default_factory=list)
+
+
 class ToolVendor:
-    def get_supported_products(self) -> list[str]:
-        ...
+    @staticmethod
+    def get_name() -> str:
+        raise NotImplementedError()
 
-    def get_latest_release(self, name: str, os: str, arch: str) -> Product:
-        ...
+    def get_latest_release(self, tool: Tool, os: str, arch: str) -> Artifact:
+        raise NotImplementedError()
 
-    def get_release_by_version(self, name: str, version: str, os: str, arch: str) -> Product:
-        ...
+    def get_release_by_version(self, tool: Tool, version: str, os: str, arch: str) -> Artifact:
+        raise NotImplementedError()
