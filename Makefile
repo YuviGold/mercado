@@ -19,5 +19,8 @@ install: clean dist
 dist:
 	./setup.py bdist_wheel
 
+deploy: dist
+	python -m twine upload --verbose dist/*
+
 clean:
 	-rm -rf dist build *.egg-info
