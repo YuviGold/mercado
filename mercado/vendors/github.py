@@ -7,8 +7,10 @@ from typing import Callable
 
 from requests import Session
 
-from ..utils import choose_url, create_session, get_architecture_variations, is_valid_architecture
-from .vendor import Artifact, Tool, ToolVendor
+from ..utils import (choose_url, create_session, get_architecture_variations,
+                     is_valid_architecture)
+from .url_fetcher import URLDownloader
+from .vendor import Installer, Tool, ToolVendor
 
 
 @dataclass
@@ -71,20 +73,13 @@ class GitHub(ToolVendor):
         logging.debug(f"Looking for the best url from: {valid_assets_urls}")
         return choose_url(valid_assets_urls)
 
-    def get_release_by_version(self, tool: GitHubTool, version: str, os: str, arch: str) -> Artifact:
+    def get_latest_version(self, tool: GitHubTool):
+        return self._get_latest_release(tool)['tag_name']
+
+    def get_installer(self, tool: GitHubTool, version: str, os: str, arch: str) -> Installer:
         res = self._get_release_by_tag(tool, version)
         url = self._get_asset_url(tool, os, arch, res['assets'])
         if not url:
-            raise ValueError(f'There is no available artifact {tool.name} for {os=}, {arch=}, {version=}')
+            raise ValueError(f'There is no available asset {tool.name} for {os=}, {arch=}, {version=}')
 
-        return Artifact(tool.name, os, arch, res['tag_name'], url)
-
-    def get_latest_release(self, tool: GitHubTool, os: str, arch: str) -> Artifact:
-        res = self._get_latest_release(tool)
-        version = res['tag_name']
-        url = self._get_asset_url(tool, os, arch, res['assets'])
-        if not url:
-            raise ValueError(
-                f'There is no available artifact {tool.name} for {os=}, {arch=} for latest version {version=}')
-
-        return Artifact(tool.name, os, arch, res['tag_name'], url)
+        return URLDownloader(tool.name, version, url)

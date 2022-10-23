@@ -8,10 +8,9 @@ from rich.logging import RichHandler
 from rich.table import Table
 from typer import Option, Typer
 
-from mercado.vendors.vendor import Label
-
 from .tool_manager import ToolManager
-from .utils import download, get_local_version, is_tool_available_in_path
+from .utils import get_local_version, is_tool_available_in_path
+from .vendors.vendor import Label
 
 app = Typer()
 console = Console()
@@ -64,12 +63,12 @@ def install_tool(names: list[str],
     manager = ToolManager()
 
     for name in names:
-        release = manager.get_release(name, os, arch)
-        logging.debug(f"'{name}' was found at {release.url}")
+        installer = manager.get_installer(name, os, arch)
+        logging.debug(f"'{name}' was found with version {installer.version}")
 
         if not dry_run:
-            download(name, release.url)
-            console.print(f":thumbs_up: '{name}' version {release.version} is installed")
+            installer.install()
+            console.print(f":thumbs_up: '{name}' version {installer.version} is installed")
 
 
 @app.command('is-latest', help='Check if the current version is the latest one')
@@ -78,8 +77,7 @@ def is_latest(name: str):
     logging.info(f"'{name}' was found at {path} with version {local_version}")
 
     manager = ToolManager()
-    latest_version = manager.get_release(
-        name, platform.system().lower(), platform.machine()).version
+    latest_version = manager.get_latest_version(name)
     if local_version not in latest_version:
         console.print(f"'{name}' version {latest_version} is available! (current: {local_version})")
     else:

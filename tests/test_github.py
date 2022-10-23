@@ -1,8 +1,7 @@
 import pytest
-from mercado.vendors.github import GitHubTool
-from mercado.vendors.vendor import ToolVendor
+from mercado.vendors.github import GitHub, GitHubTool
 
 
-def test_get_latest_release_invalid_tool(github: ToolVendor, os: str, arch: str):
+def test_get_latest_release_invalid_tool(github: GitHub):
     with pytest.raises(ValueError):
-        github.get_latest_release(GitHubTool("invalid", repository="invalid"), os, arch)
+        github._get_latest_release(GitHubTool("invalid", repository="invalid"))

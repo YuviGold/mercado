@@ -1,5 +1,6 @@
-from mercado.cli import *
 import pytest
+from mercado.cli import install_tool, is_latest
+from mercado.tool_manager import ToolManager
 
 
 @pytest.mark.parametrize("tool", [t.name for _, tools in ToolManager().get_supported_tools() for t in tools])

@@ -3,7 +3,7 @@ all: verify dist
 verify: format lint test
 
 lint:
-	python -m flake8 --max-line-length 120 mercado
+	python -m flake8 --max-line-length 120 mercado tests
 	git diff --shortstat --exit-code
 
 format:
@@ -11,9 +11,6 @@ format:
 
 test:
 	python -m pytest --log-cli-level=$(or ${LOGLEVEL},info) -s --verbose $(or ${TEST},tests) -k $(or ${TEST_FUNC},'')
-
-test_all_available:
-	TEST_FUNC="test_get_latest_release" $(MAKE) test
 
 install: clean dist
 	pip install --force-reinstall ./dist/mercado-*.whl

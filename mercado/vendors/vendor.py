@@ -13,23 +13,23 @@ class Label(Enum):
 
 
 @dataclass
-class Artifact:
-    name: str
-    os: str
-    arch: str
-    version: str = ''
-    url: str = ''
-
-
-@dataclass
 class Tool:
     name: str
     labels: list[Label] = field(default_factory=list)
 
 
-class ToolVendor:
-    def get_latest_release(self, tool: Tool, os: str, arch: str) -> Artifact:
+@dataclass
+class Installer:
+    name: str
+    version: str
+
+    def install(self):
         raise NotImplementedError()
 
-    def get_release_by_version(self, tool: Tool, version: str, os: str, arch: str) -> Artifact:
+
+class ToolVendor:
+    def get_latest_version(self, tool: Tool) -> str:
+        raise NotImplementedError()
+
+    def get_installer(self, tool: Tool, version: str, os: str, arch: str) -> Installer:
         raise NotImplementedError()

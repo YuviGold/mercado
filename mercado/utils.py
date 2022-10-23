@@ -17,7 +17,8 @@ from requests.adapters import HTTPAdapter
 from rich.progress import Progress
 from urllib3 import Retry
 
-MATRIX_X86_64 = ('x86_64', 'amd64', '64bit')
+MATRIX_X86_64 = ('amd64', 'x86_64', '64bit')
+INSTALL_DIR = Path.home() / ".mercado"
 CHUNK_SIZE = 1024
 REQUEST_MAX_TIMEOUT = 10
 STREAM_MAX_TIMEOUT = 300
@@ -77,14 +78,14 @@ def get_tool_version(path: Path) -> str:
 
 
 def local_path(name: str) -> Path:
-    return Path.home() / ".mercado" / name
+    return INSTALL_DIR / name
 
 
 def is_tool_available_in_path(name: str) -> bool:
     return which(name) is not None
 
 
-def download(name: str, url: str):
+def download_url(name: str, url: str):
     logging.debug(f'Download {url}')
 
     with create_session().get(url, stream=True, timeout=STREAM_MAX_TIMEOUT) as r:
@@ -102,7 +103,6 @@ def download(name: str, url: str):
                     progress.advance(task, CHUNK_SIZE)
 
         dest = local_path(name)
-        dest.parent.mkdir(exist_ok=True)
 
         if is_archive(str(temp_file)):
             temp_file = extract_file_from_archive(temp_file, name)

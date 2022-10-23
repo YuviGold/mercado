@@ -1,6 +1,9 @@
 
+from .utils import INSTALL_DIR
+
 from .vendors.github import GitHub, GitHubTool
 from .vendors.hashicorp import Hashicorp
+from .vendors.shell import Shell, ShellTool
 from .vendors.url_fetcher import URLFetcher, URLFetcherTool
 from .vendors.vendor import Label, Tool, ToolVendor
 
@@ -31,4 +34,16 @@ TOOLS: dict[ToolVendor, list[Tool]] = {
                        f"https://storage.googleapis.com/kubernetes-release/release/{version}/bin/{os}/{arch}/kubectl",
                        ),
     ],
+
+    Shell(): [
+        ShellTool("helm", labels=[Label.K8S],
+                  env_vars={"USE_SUDO": "false", "HELM_INSTALL_DIR": INSTALL_DIR},
+                  get_latest_version=lambda: GitHub().get_latest_version(GitHubTool('helm', repository='helm/helm')),
+                  download_script=lambda version: f"""
+                  curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+                  chmod 700 get_helm.sh
+                  ./get_helm.sh --version {version}
+                  """
+                  ),
+    ]
 }
