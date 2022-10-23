@@ -21,19 +21,25 @@ MATRIX_X86_64 = ('x86_64', 'amd64', '64bit')
 CHUNK_SIZE = 1024
 REQUEST_MAX_TIMEOUT = 10
 STREAM_MAX_TIMEOUT = 300
+SUBPROCSES_TIMEOUT = 30
 SUPPORTED_ARCHIVE_FORMATS = sum([format[1] for format in get_unpack_formats()], [])
+
+
+def get_architecture_variations(arch: str) -> list[str]:
+    if arch in MATRIX_X86_64:
+        return MATRIX_X86_64
+    return [arch]
 
 
 def is_valid_architecture(expected: str, actual: str) -> bool:
     '''
     Equalize architectures that their name does not necessarily match
     '''
-    if expected in MATRIX_X86_64:
-        for arch in MATRIX_X86_64:
-            if re.search(arch, actual, re.IGNORECASE):
-                return True
+    for arch in get_architecture_variations(expected):
+        if re.search(arch, actual, re.IGNORECASE):
+            return True
 
-    return expected in actual
+    return False
 
 
 def get_local_version(name: str) -> tuple[str, str]:
@@ -47,19 +53,27 @@ def get_local_version(name: str) -> tuple[str, str]:
     return get_tool_version(path), path
 
 
+def get_command_version(command: str) -> str:
+    res = subprocess.run(command.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=SUBPROCSES_TIMEOUT)
+    output = res.stdout.decode().strip()
+    match = re.search(
+        r'([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?', output)
+    if match:
+        return match[0]
+    raise RuntimeError(f'Could not find a valid version for {command}')
+
+
 def get_tool_version(path: Path) -> str:
     if not which(path):
         raise FileNotFoundError(path)
 
-    try:
-        output = subprocess.check_output(f'{path} --version'.split(), stderr=subprocess.STDOUT)
-    except subprocess.CalledProcessError:
-        output = subprocess.check_output(f'{path} version'.split(), stderr=subprocess.STDOUT)
-
-    output = output.decode().strip()
-    match = re.search(
-        r'([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?', output)
-    return match[0]
+    commands = [f'{path} --version', f'{path} version']
+    for command in commands:
+        try:
+            return get_command_version(command)
+        except RuntimeError as ex:
+            logging.debug(ex)
+    raise ValueError(path)
 
 
 def local_path(name: str) -> Path:
@@ -131,10 +145,13 @@ def create_session():
     return session
 
 
-def choose_url(urls: list[str]) -> str:
+def filter_artifacts(names: list[str]) -> list[str]:
     DROP_NAMES = ('checksum', 'sha', '.sig', '.pem', '.sbom', 'key')
+    return list(filter(lambda name: all([substr not in name for substr in DROP_NAMES]), names))
 
-    urls = list(filter(lambda url: all([substr not in url for substr in DROP_NAMES]), urls))
+
+def choose_url(urls: list[str]) -> str:
+    urls = filter_artifacts(urls)
 
     # Priority #1 - without suffix
     if url := _search_url(urls, no_suffix):
@@ -163,3 +180,10 @@ def _search_url(urls: list[str], func: Callable[[str], bool]) -> str:
         return ls[0]
 
     return None
+
+
+def fetch_url(url: str) -> str:
+    logging.debug(f"Fetching {url}")
+    res = create_session().get(url)
+    res.raise_for_status()
+    return res.text

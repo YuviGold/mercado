@@ -28,10 +28,6 @@ class Tool:
 
 
 class ToolVendor:
-    @staticmethod
-    def get_name() -> str:
-        raise NotImplementedError()
-
     def get_latest_release(self, tool: Tool, os: str, arch: str) -> Artifact:
         raise NotImplementedError()
 

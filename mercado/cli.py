@@ -28,7 +28,10 @@ def list_tools(filter_labels: list[Label] = Option(None, "--label", "-l"),
 
     table = Table(title="Mercado tools")
     table.add_column("Name")
-    table.add_column("Vendor")
+
+    if verbose:
+        table.add_column("Vendor")
+
     table.add_column("Labels")
     table.add_column("Exists")
 
@@ -40,12 +43,15 @@ def list_tools(filter_labels: list[Label] = Option(None, "--label", "-l"),
                     continue
 
             exists = is_tool_available_in_path(tool.name)
+            exists_string = pretty_bool(exists)
 
-            local_string = pretty_bool(exists)
-            if exists and verbose:
-                version, path = get_local_version(tool.name)
-                local_string += f' ({path} {version})'
-            table.add_row(tool.name, vendor, ','.join(map(lambda item: item.value, tool.labels)), local_string)
+            if verbose:
+                if exists:
+                    version, path = get_local_version(tool.name)
+                    exists_string += f' ({path} {version})'
+                table.add_row(tool.name, vendor, ','.join(map(lambda item: item.value, tool.labels)), exists_string)
+            else:
+                table.add_row(tool.name, ','.join(map(lambda item: item.value, tool.labels)), exists_string)
 
     console.print(table)
 

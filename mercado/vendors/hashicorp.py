@@ -8,10 +8,6 @@ class Hashicorp(ToolVendor):
     def __init__(self):
         self._products = self._get_hashicorp_products()
 
-    @staticmethod
-    def get_name() -> str:
-        return 'hashicorp'
-
     def _get_hashicorp_products(self):
         res = create_session().get('https://api.releases.hashicorp.com/v1/products')
         res.raise_for_status()
