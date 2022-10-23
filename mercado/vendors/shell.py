@@ -10,7 +10,7 @@ from ..utils import INSTALL_DIR
 from .vendor import Installer, Tool, ToolVendor
 
 
-@dataclass
+@dataclass(frozen=True)
 class ShellTool(Tool):
     get_latest_version: Callable[[], str] = None
     download_script: Callable[[str], str] = None

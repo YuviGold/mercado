@@ -9,7 +9,7 @@ from ..utils import (create_session, download_url, fetch_url,
 from .vendor import Installer, Tool, ToolVendor
 
 
-@dataclass
+@dataclass(frozen=True)
 class URLFetcherTool(Tool):
     get_latest_version_url: str = ''
     get_release_by_version_url: Callable[[str, str, str], str] = None

@@ -12,10 +12,10 @@ class Label(Enum):
     CICD = "ci/cd"
 
 
-@dataclass
+@dataclass(frozen=True)
 class Tool:
     name: str
-    labels: list[Label] = field(default_factory=list)
+    labels: tuple[Label] = field(default_factory=tuple)
 
 
 @dataclass

@@ -1,3 +1,4 @@
+from functools import cache
 from http import HTTPStatus
 
 from ..utils import choose_url, create_session, is_valid_architecture
@@ -42,9 +43,11 @@ class Hashicorp(ToolVendor):
 
         return choose_url(valid_assets_urls)
 
+    @cache
     def get_latest_version(self, tool: Tool) -> str:
         return self._get_hashicorp_latest_release(tool.name)['version']
 
+    @cache
     def get_installer(self, tool: Tool, version: str, os: str, arch: str) -> Installer:
         res = self._get_hashicorp_product_releases(tool.name, version)
         url = self._get_build_url(os, arch, res['builds'])

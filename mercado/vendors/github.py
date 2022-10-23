@@ -1,6 +1,7 @@
 import logging
 import re
 from dataclasses import dataclass
+from functools import cache
 from http import HTTPStatus
 from os import environ
 from typing import Callable
@@ -13,7 +14,7 @@ from .url_fetcher import URLDownloader
 from .vendor import Installer, Tool, ToolVendor
 
 
-@dataclass
+@dataclass(frozen=True)
 class GitHubTool(Tool):
     repository: str = ''
     asset_template: Callable[[str, str], str] = None
@@ -73,9 +74,11 @@ class GitHub(ToolVendor):
         logging.debug(f"Looking for the best url from: {valid_assets_urls}")
         return choose_url(valid_assets_urls)
 
+    @cache
     def get_latest_version(self, tool: GitHubTool):
         return self._get_latest_release(tool)['tag_name']
 
+    @cache
     def get_installer(self, tool: GitHubTool, version: str, os: str, arch: str) -> Installer:
         res = self._get_release_by_tag(tool, version)
         url = self._get_asset_url(tool, os, arch, res['assets'])
