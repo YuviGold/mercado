@@ -1,0 +1,14 @@
+version: '3.4'
+
+services:
+  test:
+    build: 
+      dockerfile: Dockerfile.build
+    volumes:
+      - ${PWD}:/app
+    working_dir: /app
+    environment:
+      - TEST
+      - TEST_FUNC
+      - LOGLEVEL
+      - GITHUB_TOKEN

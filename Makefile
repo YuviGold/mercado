@@ -2,14 +2,17 @@ all: verify dist
 
 verify: format lint test
 
-lint:
+test format lint:
+	docker-compose run --rm test make _$@
+
+_lint:
 	python -m flake8 --max-line-length 120 mercado tests
 	git diff --shortstat --exit-code
 
-format:
+_format:
 	find mercado -name '*.py' -exec autopep8 --max-line-length 120 -i {} \;
 
-test:
+_test:
 	python -m pytest --log-cli-level=$(or ${LOGLEVEL},info) -s --verbose $(or ${TEST},tests) -k $(or ${TEST_FUNC},'')
 
 install: clean dist

@@ -100,7 +100,7 @@ def download_url(name: str, url: str):
             for data in r.iter_content(chunk_size=CHUNK_SIZE):
                 if data:
                     file.write(data)
-                    progress.advance(task, CHUNK_SIZE)
+                progress.advance(task, CHUNK_SIZE)
 
         dest = local_path(name)
 
