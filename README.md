@@ -40,3 +40,12 @@ make install
 
 mercado --help
 ```
+
+### Run GHA
+
+I use [nektos/act](https://github.com/nektos/act) tool to run the Git Hub Action locally.
+By default, act runs on a slim container image, for docker-compose usage the base image is replaced.
+
+```bash
+act --platform=ubuntu-latest=lucasalt/act_base:latest
+```

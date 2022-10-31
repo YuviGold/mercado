@@ -13,3 +13,7 @@ services:
       - TEST_FUNC
       - LOGLEVEL
       - GITHUB_TOKEN
+
+      # Supporting AppImage artifacts in docker
+      # https://github.com/AppImage/AppImageKit/issues/912#issuecomment-528669441
+      - APPIMAGE_EXTRACT_AND_RUN=1

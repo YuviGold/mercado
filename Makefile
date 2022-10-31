@@ -3,7 +3,7 @@ all: verify dist
 verify: format lint test
 
 test format lint:
-	docker-compose run --rm test make _$@
+	docker-compose build test && docker-compose run --rm test make _$@
 
 _lint:
 	python -m flake8 --max-line-length 120 mercado tests
