@@ -3,7 +3,6 @@ import platform
 
 import pytest
 from mercado.tool_manager import ToolManager
-
 from mercado.vendors.github import GitHub
 from mercado.vendors.hashicorp import Hashicorp
 from mercado.vendors.vendor import ToolVendor

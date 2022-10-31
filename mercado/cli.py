@@ -8,10 +8,9 @@ from rich.logging import RichHandler
 from rich.table import Table
 from typer import Option, Typer
 
-from mercado.vendors.vendor import Label
-
 from .tool_manager import ToolManager
-from .utils import download, get_local_version, is_tool_available_in_path
+from .utils import get_local_version, is_tool_available_in_path
+from .vendors.vendor import Label
 
 app = Typer()
 console = Console()
@@ -28,7 +27,10 @@ def list_tools(filter_labels: list[Label] = Option(None, "--label", "-l"),
 
     table = Table(title="Mercado tools")
     table.add_column("Name")
-    table.add_column("Vendor")
+
+    if verbose:
+        table.add_column("Vendor")
+
     table.add_column("Labels")
     table.add_column("Exists")
 
@@ -40,12 +42,15 @@ def list_tools(filter_labels: list[Label] = Option(None, "--label", "-l"),
                     continue
 
             exists = is_tool_available_in_path(tool.name)
+            exists_string = pretty_bool(exists)
 
-            local_string = pretty_bool(exists)
-            if exists and verbose:
-                version, path = get_local_version(tool.name)
-                local_string += f' ({path} {version})'
-            table.add_row(tool.name, vendor, ','.join(map(lambda item: item.value, tool.labels)), local_string)
+            if verbose:
+                if exists:
+                    version, path = get_local_version(tool.name)
+                    exists_string += f' ({path} {version})'
+                table.add_row(tool.name, vendor, ','.join(map(lambda item: item.value, tool.labels)), exists_string)
+            else:
+                table.add_row(tool.name, ','.join(map(lambda item: item.value, tool.labels)), exists_string)
 
     console.print(table)
 
@@ -58,12 +63,12 @@ def install_tool(names: list[str],
     manager = ToolManager()
 
     for name in names:
-        release = manager.get_release(name, os, arch)
-        logging.debug(f"'{name}' was found at {release.url}")
+        installer = manager.get_installer(name, os, arch)
+        logging.debug(f"'{name}' was found with version {installer.version}")
 
         if not dry_run:
-            download(name, release.url)
-            console.print(f":thumbs_up: '{name}' version {release.version} is installed")
+            installer.install()
+            console.print(f":thumbs_up: '{name}' version {installer.version} is installed")
 
 
 @app.command('is-latest', help='Check if the current version is the latest one')
@@ -72,8 +77,7 @@ def is_latest(name: str):
     logging.info(f"'{name}' was found at {path} with version {local_version}")
 
     manager = ToolManager()
-    latest_version = manager.get_release(
-        name, platform.system().lower(), platform.machine()).version
+    latest_version = manager.get_latest_version(name)
     if local_version not in latest_version:
         console.print(f"'{name}' version {latest_version} is available! (current: {local_version})")
     else:

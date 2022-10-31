@@ -1,16 +1,14 @@
+from functools import cache
 from http import HTTPStatus
 
 from ..utils import choose_url, create_session, is_valid_architecture
-from .vendor import Artifact, Tool, ToolVendor
+from .url_fetcher import URLDownloader
+from .vendor import Installer, Tool, ToolVendor
 
 
 class Hashicorp(ToolVendor):
     def __init__(self):
         self._products = self._get_hashicorp_products()
-
-    @staticmethod
-    def get_name() -> str:
-        return 'hashicorp'
 
     def _get_hashicorp_products(self):
         res = create_session().get('https://api.releases.hashicorp.com/v1/products')
@@ -45,20 +43,15 @@ class Hashicorp(ToolVendor):
 
         return choose_url(valid_assets_urls)
 
-    def get_release_by_version(self, tool: Tool, version: str, os: str, arch: str) -> Artifact:
+    @cache
+    def get_latest_version(self, tool: Tool) -> str:
+        return self._get_hashicorp_latest_release(tool.name)['version']
+
+    @cache
+    def get_installer(self, tool: Tool, version: str, os: str, arch: str) -> Installer:
         res = self._get_hashicorp_product_releases(tool.name, version)
         url = self._get_build_url(os, arch, res['builds'])
         if not url:
-            raise ValueError(f'There is no available artifact {tool.name} for {os=}, {arch=}, {version=}')
+            raise ValueError(f'There is no available build {tool.name} for {os=}, {arch=}, {version=}')
 
-        return Artifact(tool.name, os, arch, version, url)
-
-    def get_latest_release(self, tool: Tool, os: str, arch: str) -> Artifact:
-        res = self._get_hashicorp_latest_release(tool.name)
-        version = res['version']
-        url = self._get_build_url(os, arch, res['builds'])
-        if not url:
-            raise ValueError(
-                f'There is no available artifact {tool.name} for {os=}, {arch=} for latest version {version=}')
-
-        return Artifact(tool.name, os, arch, version, url)
+        return URLDownloader(tool.name, version, url)

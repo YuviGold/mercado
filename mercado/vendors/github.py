@@ -1,29 +1,28 @@
 import logging
 import re
 from dataclasses import dataclass
+from functools import cache
 from http import HTTPStatus
 from os import environ
+from typing import Callable
 
 from requests import Session
 
-from ..utils import choose_url, create_session, is_valid_architecture
-from .vendor import Artifact, Tool, ToolVendor
+from ..utils import (choose_url, create_session, get_architecture_variations,
+                     is_valid_architecture)
+from .url_fetcher import URLDownloader
+from .vendor import Installer, Tool, ToolVendor
 
 
-@dataclass
+@dataclass(frozen=True)
 class GitHubTool(Tool):
-    name: str
     repository: str = ''
-    # render_function: Callable[[str, str, str], str]
+    asset_template: Callable[[str, str], str] = None
 
 
 class GitHub(ToolVendor):
     def __init__(self):
         self._token = self._get_local_token()
-
-    @staticmethod
-    def get_name() -> str:
-        return 'github'
 
     def _get_local_token(self):
         # TODO: Make more sophisticated
@@ -51,15 +50,23 @@ class GitHub(ToolVendor):
         res.raise_for_status()
         return res.json()
 
-    def _get_asset_url(self, name: str, os: str, arch: str, assets: list[dict[str]]) -> str:
+    def _get_asset_url(self, tool: GitHubTool, os: str, arch: str, assets: list[dict[str]]) -> str:
         valid_assets_urls = []
 
         logging.debug(f"Found the following assets: {list(map(lambda asset: asset['name'], assets))}")
 
+        templates = []
+        if tool.asset_template:
+            for arch in get_architecture_variations(arch):
+                templates.append(tool.asset_template(os, arch))
+            logging.debug(f"Tool {tool.name} has the following asset templates: {templates}")
+
         for asset in assets:
-            # TODO: Currently it only validates os and arch within the name,
-            # in case it would require manipulation - the render_function will return
-            if re.search(name, asset['name'], re.IGNORECASE) and \
+            for template in templates:
+                if re.search(asset['name'], template, re.IGNORECASE):
+                    return asset['browser_download_url']
+
+            if re.search(tool.name, asset['name'], re.IGNORECASE) and \
                re.search(os, asset['name'], re.IGNORECASE) and \
                is_valid_architecture(expected=arch, actual=asset['name']):
                 valid_assets_urls.append(asset['browser_download_url'])
@@ -67,20 +74,15 @@ class GitHub(ToolVendor):
         logging.debug(f"Looking for the best url from: {valid_assets_urls}")
         return choose_url(valid_assets_urls)
 
-    def get_release_by_version(self, tool: GitHubTool, version: str, os: str, arch: str) -> Artifact:
+    @cache
+    def get_latest_version(self, tool: GitHubTool):
+        return self._get_latest_release(tool)['tag_name']
+
+    @cache
+    def get_installer(self, tool: GitHubTool, version: str, os: str, arch: str) -> Installer:
         res = self._get_release_by_tag(tool, version)
-        url = self._get_asset_url(tool.name, os, arch, res['assets'])
+        url = self._get_asset_url(tool, os, arch, res['assets'])
         if not url:
-            raise ValueError(f'There is no available artifact {tool.name} for {os=}, {arch=}, {version=}')
+            raise ValueError(f'There is no available asset {tool.name} for {os=}, {arch=}, {version=}')
 
-        return Artifact(tool.name, os, arch, res['tag_name'], url)
-
-    def get_latest_release(self, tool: GitHubTool, os: str, arch: str) -> Artifact:
-        res = self._get_latest_release(tool)
-        version = res['tag_name']
-        url = self._get_asset_url(tool.name, os, arch, res['assets'])
-        if not url:
-            raise ValueError(
-                f'There is no available artifact {tool.name} for {os=}, {arch=} for latest version {version=}')
-
-        return Artifact(tool.name, os, arch, res['tag_name'], url)
+        return URLDownloader(tool.name, version, url)

@@ -1,32 +1,14 @@
 import logging
 
-from .vendors.github import GitHub, GitHubTool
-from .vendors.hashicorp import Hashicorp
-from .vendors.vendor import Artifact, Label, Tool, ToolVendor
-
-TOOLS: dict[ToolVendor, list[Tool]] = {
-    GitHub(): [
-        GitHubTool('kind', labels=[Label.K8S], repository='kubernetes-sigs/kind'),
-        GitHubTool('gh', labels=[Label.VCS], repository='cli/cli'),
-        GitHubTool('k3d', labels=[Label.K8S], repository='k3d-io/k3d'),
-        GitHubTool('cosign', labels=[Label.SECURITY], repository='sigstore/cosign'),
-        GitHubTool('terragrunt', labels=[Label.IAC], repository='gruntwork-io/terragrunt'),
-        GitHubTool('trivy', labels=[Label.SECURITY], repository='aquasecurity/trivy'),
-    ],
-
-    Hashicorp(): [
-        Tool('vagrant', labels=[Label.VIRT]),
-        Tool('vault', labels=[Label.SECURITY]),
-        Tool('terraform', labels=[Label.IAC]),
-        Tool('packer', labels=[Label.VIRT]),
-        Tool('waypoint', labels=[Label.CICD]),
-    ]
-}
+from .tools import TOOLS
+from .utils import INSTALL_DIR
+from .vendors.vendor import Installer, Tool, ToolVendor
 
 
 class ToolManager:
     def __init__(self) -> None:
         self._vendors: dict[ToolVendor, list[Tool]] = TOOLS
+        INSTALL_DIR.mkdir(exist_ok=True)
 
     def _get_tool(self, name) -> tuple[ToolVendor, Tool]:
         for vendor, tools in self._vendors.items():
@@ -37,20 +19,24 @@ class ToolManager:
 
     def get_supported_tools(self) -> list[tuple[str, list[Tool]]]:
         for vendor, tools in self._vendors.items():
-            yield vendor.get_name(), sorted(tools, key=lambda tool: tool.name)
+            yield vendor.__class__.__name__, sorted(tools, key=lambda tool: tool.name)
 
-    def get_release(self, name: str, os: str, arch: str) -> Artifact:
+    def get_latest_version(self, name: str) -> str:
+        vendor, tool = self._get_tool(name)
+        return vendor.get_latest_version(tool)
+
+    def get_installer(self, name: str, os: str, arch: str) -> Installer:
         version = None
         if '@' in name:
             version = name.split('@')[1]
             name = name[:name.index('@')]
 
         vendor, tool = self._get_tool(name)
-        logging.info(f"'{name}' is available by the '{vendor.__class__.__name__}' vendor")
+        logging.debug(f"'{name}' is available by the '{vendor.__class__.__name__}' vendor")
 
-        if version:
-            logging.info(f"Looking for '{tool.name}' with version {version} for {os} and {arch}")
-            return vendor.get_release_by_version(tool, version, os, arch)
-        else:
-            logging.info(f"Looking for the latest version of '{tool.name}' for {os} and {arch}")
-            return vendor.get_latest_release(tool, os, arch)
+        if not version:
+            logging.info(f"Looking for the latest version of '{tool.name}'")
+            version = vendor.get_latest_version(tool)
+
+        logging.info(f"Getting installer for tool '{tool.name}' with version {version} for {os} and {arch}")
+        return vendor.get_installer(tool, version, os, arch)
