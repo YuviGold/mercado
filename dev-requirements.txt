@@ -1,5 +1,5 @@
 attrs==22.1.0
-autopep8==1.7.0
+autopep8==2.0.0
 bleach==5.0.1
 certifi==2022.9.24
 cffi==1.15.1
