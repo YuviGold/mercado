@@ -1,6 +1,5 @@
 import logging
 from os import environ
-from typing import Optional
 
 from rich.console import Console
 from rich.logging import RichHandler
@@ -60,8 +59,8 @@ def list_tools(filter_labels: list[Label] = Option(None, "--label", "-l"),
 
 @app.command('install', help='Install a tool')
 def install_tool(names: list[str],
-                 os: Optional[str] = Option(get_host_operating_system()),
-                 arch: Optional[str] = Option(get_host_architecture()),
+                 os: str = Option(get_host_operating_system()),
+                 arch: str = Option(get_host_architecture()),
                  dry_run: bool = Option(False, envvar='DRY_RUN')):
     for name in names:
         installer = manager.get_installer(name, os, arch)
@@ -108,7 +107,7 @@ def init_logger():
     LOGLEVEL = environ.get('LOGLEVEL', 'INFO').upper()
     logging.basicConfig(level=LOGLEVEL,
                         format='%(message)s',
-                        handlers=[RichHandler()])
+                        handlers=[RichHandler(show_level=False, show_path=False)])
 
 
 def main():

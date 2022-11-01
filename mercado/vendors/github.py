@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from functools import cache
 from http import HTTPStatus
 from os import environ
-from typing import Callable
+from typing import Callable, Optional
 
 from requests import Session
 
@@ -17,7 +17,7 @@ from .vendor import Installer, Tool, ToolVendor
 @dataclass(frozen=True)
 class GitHubTool(Tool):
     repository: str = ''
-    asset_template: Callable[[str, str], str] = None
+    asset_template: Optional[Callable[[str, str], str]] = None
 
 
 class GitHub(ToolVendor):
@@ -50,7 +50,7 @@ class GitHub(ToolVendor):
         res.raise_for_status()
         return res.json()
 
-    def _get_asset_url(self, tool: GitHubTool, os: str, arch: str, assets: list[dict[str]]) -> str:
+    def _get_asset_url(self, tool: GitHubTool, os: str, arch: str, assets: list[dict[str, str]]) -> str:
         valid_assets_urls = []
 
         logging.debug(f"Found the following assets: {list(map(lambda asset: asset['name'], assets))}")

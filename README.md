@@ -7,6 +7,62 @@ Development CLIs open-sourced marketplace
 python -m pip install mercado
 ```
 
+## How to use
+
+<!-- [[[cog
+import cog
+from textwrap import dedent
+import subprocess
+
+def print_command(command):
+    cog.outl(dedent(f"""
+```bash
+$ mercado {command}
+
+{subprocess.getoutput(f"./main.py {command}")}
+```
+    """))
+
+print_command("install gh")
+
+print_command("is-latest docker")
+
+print_command("show minikube")
+]]] -->
+
+```bash
+$ mercado install gh
+
+[11/01/22 15:16:01] Looking for the latest version of 'gh'                                                                                                
+                    Getting installer for tool 'gh' with version v2.18.1 for linux and x86_64                                                             
+[11/01/22 15:16:02] Installing 'gh'...                                                                                                                    
+[11/01/22 15:16:03] Downloading 'gh' to /tmp/gh_2.18.1_linux_amd64.tar.gz (size: 9.2 MB)                                                                  
+Downloading... ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:00
+[11/01/22 15:16:04] Unpacking /tmp/gh_2.18.1_linux_amd64.tar.gz to /tmp/gh_2.18.1_linux_amd64.tar                                                         
+                    Copying /tmp/gh_2.18.1_linux_amd64.tar/gh_2.18.1_linux_amd64/bin/gh to /home/yuvalgold/.mercado/gh                                    
+👍       'gh' version v2.18.1 is installed
+```
+
+
+```bash
+$ mercado is-latest docker
+
+👎       'docker' version 'v20.10.21' is available! (current: 20.10.18)
+```
+
+
+```bash
+$ mercado show gh
+
+Name: gh
+Installed: ✅
+Local Version: 2.18.1
+Path: /home/yuvalgold/.mercado/gh
+Remote Version: v2.18.1
+```
+
+<!-- [[[end]]] -->
+
 ## Test
 
 The tests are running with pytest inside of a docker-compose container
