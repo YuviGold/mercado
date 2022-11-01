@@ -24,7 +24,7 @@ CHUNK_SIZE = 1024
 REQUEST_MAX_TIMEOUT = 10
 STREAM_MAX_TIMEOUT = 300
 SUBPROCSES_TIMEOUT = 30
-SUPPORTED_ARCHIVE_FORMATS = sum([format[1] for format in get_unpack_formats()], [])
+SUPPORTED_ARCHIVE_FORMATS: list[str] = sum([format[1] for format in get_unpack_formats()], [])
 
 
 def get_architecture_variations(arch: str) -> list[str]:
@@ -44,11 +44,11 @@ def is_valid_architecture(expected: str, actual: str) -> bool:
     return False
 
 
-def get_local_version(name: str) -> tuple[str, str]:
+def get_local_version(name: str) -> tuple[str, Path]:
     path = local_path(name)
 
     if not path.exists():
-        path = which(name)
+        path = which(Path(name))
         if not path:
             raise ValueError(f'{name} could not be found')
 

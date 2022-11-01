@@ -38,7 +38,7 @@ TOOLS: dict[ToolVendor, list[Tool]] = {
 
     Shell(): [
         ShellTool("helm", labels=(Label.K8S,),
-                  env_vars={"USE_SUDO": "false", "HELM_INSTALL_DIR": INSTALL_DIR},
+                  env_vars={"USE_SUDO": "false", "HELM_INSTALL_DIR": str(INSTALL_DIR)},
                   get_latest_version=lambda: GitHub().get_latest_version(GitHubTool('helm', repository='helm/helm')),
                   download_script=lambda version: f"""
                   curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3

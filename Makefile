@@ -22,6 +22,9 @@ install: clean dist
 dist:
 	./setup.py bdist_wheel
 
+docs:
+	cog -r README.md
+
 deploy: dist
 	python -m twine upload --verbose dist/*
 
