@@ -22,7 +22,8 @@ def pretty_bool(condition: bool) -> str:
 
 @app.command('list', help='List all available tools')
 def list_tools(filter_labels: list[Label] = Option(None, "--label", "-l"),
-               verbose: bool = Option(False)):
+               verbose: bool = Option(False),
+               installed_only: bool = Option(False)):
     manager = ToolManager()
 
     table = Table(title="Mercado tools")
@@ -42,6 +43,9 @@ def list_tools(filter_labels: list[Label] = Option(None, "--label", "-l"),
                     continue
 
             exists = is_tool_available_in_path(tool.name)
+            if installed_only and not exists:
+                continue
+
             exists_string = pretty_bool(exists)
 
             if verbose:
@@ -64,9 +68,10 @@ def install_tool(names: list[str],
 
     for name in names:
         installer = manager.get_installer(name, os, arch)
-        logging.debug(f"'{name}' was found with version {installer.version}")
+        logging.debug(f"'{installer.name}' was found with version '{installer.version}'")
 
         if not dry_run:
+            logging.info(f"Installing '{installer.name}'...")
             installer.install()
             console.print(f":thumbs_up: '{name}' version {installer.version} is installed")
 

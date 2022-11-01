@@ -46,5 +46,12 @@ TOOLS: dict[ToolVendor, list[Tool]] = {
                   ./get_helm.sh --version {version}
                   """
                   ),
+        ShellTool("docker", labels=(Label.VIRT,),
+                  get_latest_version=lambda: GitHub().get_latest_version(GitHubTool('moby', repository='moby/moby')),
+                  download_script=lambda version: f"""
+                  curl -fsSL https://get.docker.com -o get-docker.sh
+                  VERSION={version} sh get-docker.sh
+                  """
+                  )
     ]
 }
