@@ -1,5 +1,4 @@
 import logging
-import platform
 from os import environ
 from typing import Optional
 
@@ -9,11 +8,13 @@ from rich.table import Table
 from typer import Option, Typer
 
 from .tool_manager import ToolManager
-from .utils import get_local_version, is_tool_available_in_path
+from .utils import (get_host_architecture, get_host_operating_system,
+                    get_local_version, is_tool_available_in_path)
 from .vendors.vendor import Label
 
 app = Typer()
 console = Console()
+manager = ToolManager()
 
 
 def pretty_bool(condition: bool) -> str:
@@ -24,8 +25,6 @@ def pretty_bool(condition: bool) -> str:
 def list_tools(filter_labels: list[Label] = Option(None, "--label", "-l"),
                verbose: bool = Option(False),
                installed_only: bool = Option(False)):
-    manager = ToolManager()
-
     table = Table(title="Mercado tools")
     table.add_column("Name")
 
@@ -61,11 +60,9 @@ def list_tools(filter_labels: list[Label] = Option(None, "--label", "-l"),
 
 @app.command('install', help='Install a tool')
 def install_tool(names: list[str],
-                 os: Optional[str] = Option(platform.system().lower()),
-                 arch: Optional[str] = Option(platform.machine()),
+                 os: Optional[str] = Option(get_host_operating_system()),
+                 arch: Optional[str] = Option(get_host_architecture()),
                  dry_run: bool = Option(False, envvar='DRY_RUN')):
-    manager = ToolManager()
-
     for name in names:
         installer = manager.get_installer(name, os, arch)
         logging.debug(f"'{installer.name}' was found with version '{installer.version}'")
@@ -73,20 +70,38 @@ def install_tool(names: list[str],
         if not dry_run:
             logging.info(f"Installing '{installer.name}'...")
             installer.install()
-            console.print(f":thumbs_up: '{name}' version {installer.version} is installed")
+            console.print(f":thumbs_up:\t'{name}' version {installer.version} is installed")
 
 
 @app.command('is-latest', help='Check if the current version is the latest one')
 def is_latest(name: str):
+    logging.disable(level=logging.WARNING)
+
     local_version, path = get_local_version(name)
     logging.info(f"'{name}' was found at {path} with version {local_version}")
 
-    manager = ToolManager()
     latest_version = manager.get_latest_version(name)
     if local_version not in latest_version:
-        console.print(f"'{name}' version {latest_version} is available! (current: {local_version})")
+        console.print(f":thumbs_down:\t'{name}' version '{latest_version}' is available! (current: {local_version})")
     else:
-        console.print(f":thumbs_up: You have the latest version of '{name}' ({local_version})")
+        console.print(f":thumbs_up:\tYou have the latest version of '{name}' ({local_version})")
+
+
+@app.command('show', help='Print information about the supported tool')
+def show(name: str):
+    logging.disable(level=logging.WARNING)
+
+    exists = is_tool_available_in_path(name)
+    latest_version = manager.get_latest_version(name)
+
+    console.print(f'Name: {name}')
+    console.print(f'Installed: {pretty_bool(exists)}')
+
+    if exists:
+        local_version, path = get_local_version(name)
+        console.print(f'Local Version: {local_version}')
+        console.print(f'Path: {path}')
+    console.print(f'Remote Version: {latest_version}')
 
 
 def init_logger():
@@ -102,4 +117,4 @@ def main():
     try:
         app()
     except ValueError as ex:
-        console.print(f':no_entry_sign: {ex}')
+        console.print(f':no_entry_sign:\t{ex}')

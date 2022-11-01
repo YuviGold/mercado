@@ -1,4 +1,5 @@
 import logging
+import platform
 import re
 import stat
 import subprocess
@@ -179,7 +180,7 @@ def _search_url(urls: list[str], func: Callable[[str], bool]) -> str:
     if len(ls) == 1:
         return ls[0]
 
-    return None
+    return ''
 
 
 def fetch_url(url: str) -> str:
@@ -187,3 +188,11 @@ def fetch_url(url: str) -> str:
     res = create_session().get(url)
     res.raise_for_status()
     return res.text
+
+
+def get_host_operating_system() -> str:
+    return platform.system().lower()
+
+
+def get_host_architecture() -> str:
+    return platform.machine()
