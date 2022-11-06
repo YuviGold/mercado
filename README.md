@@ -242,10 +242,7 @@ LOGLEVEL=debug make test
 ### Run locally
 
 ```bash
-virtualenv .venv
-source .venv/bin/activate
-pip install -r dev-requirements.txt -r requirements.txt
-./main.py --help
+poetry run mercado --help
 ```
 
 ### Install dist locally
@@ -262,7 +259,7 @@ I use [nektos/act](https://github.com/nektos/act) tool to run the Git Hub Action
 By default, act runs on a slim container image, for docker-compose usage the base image is replaced.
 
 ```bash
-act --platform=ubuntu-latest=lucasalt/act_base:latest
+act --platform=ubuntu-latest=lucasalt/act_base:latest -j <JOB>
 ```
 
 ## Generate docs

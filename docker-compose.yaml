@@ -5,9 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.build
-    volumes:
-      - ${PWD}:/app
-    working_dir: /app
+      network: host
     environment:
       - TEST
       - TEST_FUNC
