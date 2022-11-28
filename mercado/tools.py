@@ -18,6 +18,7 @@ TOOLS: dict[ToolVendor, list[Tool]] = {
         GitHubTool('tfsec', labels=(Label.SECURITY,), repository='aquasecurity/tfsec',
                    asset_template=lambda os, arch: f'tfsec-{os}-{arch}'),
         GitHubTool('minikube', labels=(Label.SECURITY,), repository='kubernetes/minikube'),
+        GitHubTool('compose', labels=(Label.VIRT,), repository='docker/compose'),
     ],
 
     Hashicorp(): [
