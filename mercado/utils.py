@@ -18,6 +18,8 @@ from requests.adapters import HTTPAdapter
 from rich.progress import Progress
 from urllib3 import Retry
 
+from .vendors.vendor import Tool
+
 MATRIX_X86_64 = ('amd64', 'x86_64', '64bit')
 INSTALL_DIR = Path.home() / ".mercado"
 CHUNK_SIZE = 1024
@@ -44,13 +46,16 @@ def is_valid_architecture(expected: str, actual: str) -> bool:
     return False
 
 
-def get_local_version(name: str) -> tuple[str, Path]:
-    path = local_path(name)
+def get_local_version(tool: Tool) -> tuple[str, Path]:
+    if tool.target:
+        path = tool.target
+    else:
+        path = default_install_path(tool.name)
 
     if not path.exists():
-        path = which(Path(name))
+        path = which(Path(tool.name))
         if not path:
-            raise ValueError(f'{name} could not be found')
+            raise ValueError(f'{tool.name} could not be found')
 
     return get_tool_version(path), path
 
@@ -78,15 +83,21 @@ def get_tool_version(path: Path) -> str:
     raise ValueError(path)
 
 
-def local_path(name: str) -> Path:
+def default_install_path(name: str) -> Path:
     return INSTALL_DIR / name
+
+
+def is_tool_available(tool: Tool) -> bool:
+    if tool.target:
+        return tool.target.exists()
+    return is_tool_available_in_path(tool.name)
 
 
 def is_tool_available_in_path(name: str) -> bool:
     return which(name) is not None
 
 
-def download_url(name: str, url: str):
+def download_url(name: str, url: str, dest: Path):
     logging.debug(f'Download {url}')
 
     with create_session().get(url, stream=True, timeout=STREAM_MAX_TIMEOUT) as r:
@@ -103,12 +114,11 @@ def download_url(name: str, url: str):
                     file.write(data)
                 progress.advance(task, CHUNK_SIZE)
 
-        dest = local_path(name)
-
         if is_archive(str(temp_file)):
             temp_file = extract_file_from_archive(temp_file, name)
 
         logging.info(f"Copying {temp_file} to {dest}")
+        dest.parent.mkdir(exist_ok=True, parents=True)
         copy(temp_file, dest)
 
         dest.chmod(dest.stat().st_mode | stat.S_IEXEC)

@@ -1,14 +1,16 @@
 import logging
 
 from .tools import TOOLS
-from .utils import INSTALL_DIR
 from .vendors.vendor import Installer, Tool, ToolVendor
 
 
 class ToolManager:
     def __init__(self) -> None:
         self._vendors: dict[ToolVendor, list[Tool]] = TOOLS
-        INSTALL_DIR.mkdir(exist_ok=True)
+
+    def get_tool(self, name) -> Tool:
+        _, tool = self._get_tool(name)
+        return tool
 
     def _get_tool(self, name) -> tuple[ToolVendor, Tool]:
         for vendor, tools in self._vendors.items():
@@ -40,3 +42,6 @@ class ToolManager:
 
         logging.info(f"Getting installer for tool '{tool.name}' with version {version} for {os} and {arch}")
         return vendor.get_installer(tool, version, os, arch)
+
+
+manager = ToolManager()

@@ -1,5 +1,7 @@
 
 from .utils import INSTALL_DIR
+from os import environ
+from pathlib import Path
 
 from .vendors.github import GitHub, GitHubTool
 from .vendors.hashicorp import Hashicorp
@@ -18,7 +20,8 @@ TOOLS: dict[ToolVendor, list[Tool]] = {
         GitHubTool('tfsec', labels=(Label.SECURITY,), repository='aquasecurity/tfsec',
                    asset_template=lambda os, arch: f'tfsec-{os}-{arch}'),
         GitHubTool('minikube', labels=(Label.SECURITY,), repository='kubernetes/minikube'),
-        GitHubTool('compose', labels=(Label.VIRT,), repository='docker/compose'),
+        GitHubTool('compose', labels=(Label.VIRT,), repository='docker/compose',
+                   target=Path(environ.get('DOCKER_CONFIG', Path.home() / ".docker")) / "cli-plugins/docker-compose")
     ],
 
     Hashicorp(): [

@@ -54,4 +54,4 @@ class Hashicorp(ToolVendor):
         if not url:
             raise ValueError(f'There is no available build {tool.name} for {os=}, {arch=}, {version=}')
 
-        return URLDownloader(tool.name, version, url)
+        return URLDownloader(tool.name, version, url, tool.target)
