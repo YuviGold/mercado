@@ -11,17 +11,17 @@ from .vendors.vendor import Label, Tool, ToolVendor
 
 TOOLS: dict[ToolVendor, list[Tool]] = {
     GitHub(): [
-        GitHubTool('kind', labels=(Label.K8S,), repository='kubernetes-sigs/kind'),
+        GitHubTool('kind', labels=(Label.K8S, Label.DOCKER, Label.ORCHESTRATE), repository='kubernetes-sigs/kind'),
         GitHubTool('gh', labels=(Label.VCS,), repository='cli/cli'),
-        GitHubTool('k3d', labels=(Label.K8S,), repository='k3d-io/k3d'),
+        GitHubTool('k3d', labels=(Label.K8S, Label.DOCKER, Label.ORCHESTRATE), repository='k3d-io/k3d'),
         GitHubTool('cosign', labels=(Label.SECURITY,), repository='sigstore/cosign'),
         GitHubTool('terragrunt', labels=(Label.IAC,), repository='gruntwork-io/terragrunt'),
         GitHubTool('trivy', labels=(Label.SECURITY,), repository='aquasecurity/trivy'),
         GitHubTool('tfsec', labels=(Label.SECURITY,), repository='aquasecurity/tfsec',
                    asset_template=lambda os, arch: f'tfsec-{os}-{arch}'),
-        GitHubTool('minikube', labels=(Label.SECURITY,), repository='kubernetes/minikube'),
-        GitHubTool('compose', labels=(Label.VIRT,), repository='docker/compose',
-                   target=Path(environ.get('DOCKER_CONFIG', Path.home() / ".docker")) / "cli-plugins/docker-compose")
+        GitHubTool('minikube', labels=(Label.K8S, Label.ORCHESTRATE), repository='kubernetes/minikube'),
+        GitHubTool('compose', labels=(Label.VIRT, Label.DOCKER, Label.ORCHESTRATE), repository='docker/compose',
+                   target=Path(environ.get('DOCKER_CONFIG', Path.home() / ".docker")) / "cli-plugins/docker-compose"),
     ],
 
     Hashicorp(): [
@@ -30,6 +30,7 @@ TOOLS: dict[ToolVendor, list[Tool]] = {
         Tool('terraform', labels=(Label.IAC,)),
         Tool('packer', labels=(Label.VIRT,)),
         Tool('waypoint', labels=(Label.CICD,)),
+        Tool('consul', labels=(Label.STORAGE, Label.NETWORK,)),
     ],
 
     URLFetcher(): [
@@ -50,7 +51,7 @@ TOOLS: dict[ToolVendor, list[Tool]] = {
                   ./get_helm.sh --version {version}
                   """
                   ),
-        ShellTool("docker", labels=(Label.VIRT,),
+        ShellTool("docker", labels=(Label.VIRT, Label.DOCKER),
                   get_latest_version=lambda: GitHub().get_latest_version(GitHubTool('moby', repository='moby/moby')),
                   download_script=lambda version: f"""
                   curl -fsSL https://get.docker.com -o get-docker.sh
