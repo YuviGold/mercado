@@ -4,13 +4,18 @@ from pathlib import Path
 
 
 class Label(Enum):
-    K8S = "k8s"
     DOCS = "docs"
     SECURITY = "security"
     IAC = "iac"
     VCS = "vcs"
     VIRT = "virt"
     CICD = "ci/cd"
+    STORAGE = "storage"
+    NETWORK = "network"
+    ORCHESTRATE = "orchestration"
+
+    DOCKER = "docker"
+    K8S = "k8s"
 
 
 @dataclass(frozen=True)
