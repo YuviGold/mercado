@@ -6,14 +6,13 @@ from rich.logging import RichHandler
 from rich.table import Table
 from typer import Option, Typer
 
-from .tool_manager import ToolManager
+from .tool_manager import manager
 from .utils import (get_host_architecture, get_host_operating_system,
-                    get_local_version, is_tool_available_in_path)
+                    get_local_version, is_tool_available)
 from .vendors.vendor import Label
 
 app = Typer()
 console = Console()
-manager = ToolManager()
 
 
 def pretty_bool(condition: bool) -> str:
@@ -40,7 +39,7 @@ def list_tools(filter_labels: list[Label] = Option(None, "--label", "-l"),
                 if not any([label in tool.labels for label in filter_labels]):
                     continue
 
-            exists = is_tool_available_in_path(tool.name)
+            exists = is_tool_available(tool)
             if installed_only and not exists:
                 continue
 
@@ -48,7 +47,7 @@ def list_tools(filter_labels: list[Label] = Option(None, "--label", "-l"),
 
             if verbose:
                 if exists:
-                    version, path = get_local_version(tool.name)
+                    version, path = get_local_version(tool)
                     exists_string += f' ({path} {version})'
                 table.add_row(tool.name, vendor, ','.join(map(lambda item: item.value, tool.labels)), exists_string)
             else:
@@ -76,7 +75,7 @@ def install_tool(names: list[str],
 def is_latest(name: str):
     logging.disable(level=logging.WARNING)
 
-    local_version, path = get_local_version(name)
+    local_version, path = get_local_version(manager.get_tool(name))
     logging.info(f"'{name}' was found at {path} with version {local_version}")
 
     latest_version = manager.get_latest_version(name)
@@ -90,14 +89,16 @@ def is_latest(name: str):
 def show(name: str):
     logging.disable(level=logging.WARNING)
 
-    exists = is_tool_available_in_path(name)
+    tool = manager.get_tool(name)
+
+    exists = is_tool_available(tool)
     latest_version = manager.get_latest_version(name)
 
     console.print(f'Name: {name}')
     console.print(f'Installed: {pretty_bool(exists)}')
 
     if exists:
-        local_version, path = get_local_version(name)
+        local_version, path = get_local_version(tool)
         console.print(f'Local Version: {local_version}')
         console.print(f'Path: {path}')
     console.print(f'Remote Version: {latest_version}')

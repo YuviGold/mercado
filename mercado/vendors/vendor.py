@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from enum import Enum
+from pathlib import Path
 
 
 class Label(Enum):
@@ -16,6 +17,7 @@ class Label(Enum):
 class Tool:
     name: str
     labels: tuple[Label] = field(default_factory=tuple)
+    target: Path = None
 
 
 @dataclass

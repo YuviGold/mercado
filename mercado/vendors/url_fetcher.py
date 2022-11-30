@@ -3,9 +3,10 @@ import logging
 from dataclasses import dataclass
 from http import HTTPStatus
 from typing import Callable
+from pathlib import Path
 
 from ..utils import (create_session, download_url, fetch_url,
-                     get_architecture_variations)
+                     get_architecture_variations, default_install_path)
 from .vendor import Installer, Tool, ToolVendor
 
 
@@ -39,14 +40,15 @@ class URLFetcher(ToolVendor):
 
     def get_installer(self, tool: URLFetcherTool, version: str, os: str, arch: str) -> Installer:
         url = self._check_urls(tool, os, arch, version, tool.get_release_by_version_url)
-        return URLDownloader(tool.name, version, url)
+        return URLDownloader(tool.name, version, url, tool.target)
 
 
 class URLDownloader(Installer):
-    def __init__(self, name: str, version: str, url: str):
+    def __init__(self, name: str, version: str, url: str, target: Path):
         self.name = name
         self.version = version
         self._url = url
+        self.target = target if target else default_install_path(self.name)
 
     def install(self):
-        download_url(self.name, self._url)
+        download_url(self.name, self._url, self.target)
