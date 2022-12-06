@@ -9,7 +9,7 @@ cryptography==38.0.3
 docutils==0.19
 flake8==5.0.4
 idna==3.4
-importlib-metadata==5.0.0
+importlib-metadata==5.1.0
 iniconfig==1.1.1
 jaraco.classes==3.2.3
 jeepney==0.8.0
