@@ -1,4 +1,6 @@
 FROM python:3.11
 
+RUN apt-get update && apt-get install -y shellcheck
+
 COPY dev-requirements.txt requirements.txt ./
 RUN python -m pip install -r requirements.txt -r dev-requirements.txt

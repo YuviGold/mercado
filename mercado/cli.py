@@ -22,18 +22,24 @@ def pretty_bool(condition: bool) -> str:
 @app.command('list', help='List all available tools')
 def list_tools(filter_labels: list[Label] = Option(None, "--label", "-l"),
                verbose: bool = Option(False),
+               names_only: bool = Option(False),
+               with_labels: bool = Option(False),
                installed_only: bool = Option(False)):
     table = Table(title="Mercado tools")
     table.add_column("Name")
 
-    if verbose:
-        table.add_column("Vendor")
+    if not names_only:
+        if verbose:
+            table.add_column("Vendor")
 
-    table.add_column("Labels")
-    table.add_column("Exists")
+        if with_labels:
+            table.add_column("Labels")
+        table.add_column("Installed")
 
     for vendor, tools in manager.get_supported_tools():
-        table.add_section()
+        if verbose:
+            table.add_section()
+
         for tool in tools:
             if filter_labels:
                 if not any([label in tool.labels for label in filter_labels]):
@@ -43,15 +49,26 @@ def list_tools(filter_labels: list[Label] = Option(None, "--label", "-l"),
             if installed_only and not exists:
                 continue
 
+            if names_only:
+                table.add_row(tool.name)
+                continue
+
             exists_string = pretty_bool(exists)
 
             if verbose:
                 if exists:
                     version, path = get_local_version(tool)
                     exists_string += f' ({path} {version})'
-                table.add_row(tool.name, vendor, ','.join(map(lambda item: item.value, tool.labels)), exists_string)
+
+                if with_labels:
+                    table.add_row(tool.name, vendor, ','.join(map(lambda item: item.value, tool.labels)), exists_string)
+                else:
+                    table.add_row(tool.name, vendor, exists_string)
             else:
-                table.add_row(tool.name, ','.join(map(lambda item: item.value, tool.labels)), exists_string)
+                if with_labels:
+                    table.add_row(tool.name, ','.join(map(lambda item: item.value, tool.labels)), exists_string)
+                else:
+                    table.add_row(tool.name, exists_string)
 
     console.print(table)
 
