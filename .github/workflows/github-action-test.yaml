@@ -1,6 +1,12 @@
 name: Test
 
-on: [push, pull_request]
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Run every day at midnight
+  push:
+    branches:
+      - main
+  pull_request:
 
 jobs:
   lint:
