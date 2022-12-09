@@ -1,32 +1,52 @@
 all: verify dist
 
-verify: format lint test
+.PHONY: help
+help:
+	@awk -f ./hack/help.awk $(MAKEFILE_LIST)
 
-test format lint:
-	docker-compose build test && docker-compose run --rm test make _$@
+##@ code
 
-_lint:
-	python -m flake8 --max-line-length 120 mercado tests
-	git diff --shortstat --exit-code
+.PHONY: verify
+verify: format lint test  ## run all verifications
 
-_format:
-	find mercado -name '*.py' -exec autopep8 --max-line-length 120 -i {} \;
+.PHONY: test
+test: ## run tests
+	$(MAKE) _docker_$@
 
-_test:
-	python -m pytest --log-cli-level=$(or ${LOGLEVEL},info) -s --verbose $(or ${TEST},tests) -k $(or ${TEST_FUNC},'')
+.PHONY: format
+format: ## run formatter
+	$(MAKE) _docker_$@
 
-install: clean dist
-	pip install --force-reinstall ./dist/mercado-*.whl
+.PHONY: lint
+lint: ## run linter
+	$(MAKE) _docker_$@
+
+##@ artifact
+
+.PHONY: install
+install: clean dist ## install package locally
+	$(MAKE) _$@
 
 .PHONY: dist
-dist:
-	./setup.py bdist_wheel
+dist: ## generate package artifacts
+	$(MAKE) _$@
 
-docs:
-	cog -r README.md
+.PHONY: docs
+docs:  ## generate documentation
+	$(MAKE) _$@
 
-deploy: dist
-	python -m twine upload --verbose dist/*
+.PHONY: deploy
+deploy: dist  ## deploy Python package to PyPI
+	$(MAKE) _$@
 
-clean:
-	-rm -rf dist build *.egg-info
+##@ general
+
+.PHONY: clean
+clean:  ## clean environment
+	-$(MAKE) _$@
+
+_docker_%:
+	docker-compose build test && docker-compose run --rm test make _$*
+
+_%:
+	./hack/$*.sh
