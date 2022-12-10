@@ -1,20 +1,20 @@
 # Mercado
 All-In-One Development CLI Tools Multi-platform Marketplace
 
-Stop remembering if that's `apt install` or `brew` that takes long whenever it has install recommendations only to get an outdated tool - and use `mercado` instead!
+Stop memorizing whether that's `apt install` or `brew` or any other package manager that takes too long whenever only to get an outdated tool - and use `mercado` instead!
 
 All the most used tools by developers like `docker`, `terraform`, and `kubectl`.
 
-- Supports multi-platform multi-architectures installations
-- Install the latest artifact or a specific version
-- HTTP calls with retry mechanismand timeouts
-- Unpacking archives
-- Elaborated logs with timestamps of every step in the process
 - Supports different types of installations
   - **GitHub releases**
   - **Hashicorp products**
   - **URL fetching**
   - **Customized shell scripts**
+- **Multi-platform multi-architectures** installations
+- Install the **latest artifact** or a specific version
+- HTTP calls with retry mechanismand timeouts
+- Archive unpacking
+- Elaborated logs with timestamps of every step in the process
 - CI first
   - Every artifact is verified on a daily basis
   - README is dynamically generated so docs can't get broken
@@ -48,23 +48,23 @@ Mercado tools
 ┃ Name       ┃
 ┡━━━━━━━━━━━━┩
 │ compose    │
+│ consul     │
 │ cosign     │
+│ docker     │
 │ gh         │
+│ helm       │
 │ k3d        │
 │ kind       │
+│ kubectl    │
 │ minikube   │
+│ packer     │
+│ terraform  │
 │ terragrunt │
 │ tfsec      │
 │ trivy      │
-│ consul     │
-│ packer     │
-│ terraform  │
 │ vagrant    │
 │ vault      │
 │ waypoint   │
-│ kubectl    │
-│ docker     │
-│ helm       │
 └────────────┘
 ```
 
@@ -86,33 +86,33 @@ import subprocess
 def print_command(command):
     cog.outl(dedent(f"""
 ```bash
-$ mercado {command}
+$ {command}
 
-{subprocess.getoutput(f"./main.py {command}")}
+{subprocess.getoutput(command)}
 ```
     """))
 
-print_command("install gh")
+print_command("mercado install gh")
 
-print_command("is-latest docker")
+print_command("mercado is-latest docker")
 
-print_command("show minikube")
+print_command("mercado show minikube")
 
-print_command("list --label k8s --with-labels")
+print_command("mercado list --label k8s --with-labels")
 
-print_command("list --installed-only --verbose")
+print_command("mercado list --installed-only --verbose")
 
 ]]] -->
 
 ```bash
 $ mercado install gh
 
-[12/10/22 00:09:44] Looking for the latest version of 'gh'                                                                                                       
-[12/10/22 00:09:45] Getting installer for tool 'gh' with version v2.20.2 for linux and x86_64                                                                    
+[12/10/22 04:16:21] Looking for the latest version of 'gh'                                                                                                       
+[12/10/22 04:16:22] Getting installer for tool 'gh' with version v2.20.2 for linux and x86_64                                                                    
                     Installing 'gh'...                                                                                                                           
-[12/10/22 00:09:46] Downloading 'gh' to /tmp/gh_2.20.2_linux_amd64.tar.gz (size: 9.6 MB)                                                                         
+[12/10/22 04:16:23] Downloading 'gh' to /tmp/gh_2.20.2_linux_amd64.tar.gz (size: 9.6 MB)                                                                         
 Downloading... ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:00
-[12/10/22 00:09:51] Unpacking /tmp/gh_2.20.2_linux_amd64.tar.gz to /tmp/gh_2.20.2_linux_amd64.tar                                                                
+[12/10/22 04:16:27] Unpacking /tmp/gh_2.20.2_linux_amd64.tar.gz to /tmp/gh_2.20.2_linux_amd64.tar                                                                
                     Copying /tmp/gh_2.20.2_linux_amd64.tar/gh_2.20.2_linux_amd64/bin/gh to /home/yuvalgold/.mercado/gh                                           
 👍       'gh' version v2.20.2 is installed
 ```
@@ -143,11 +143,11 @@ $ mercado list --label k8s --with-labels
 ┏━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┓
 ┃ Name     ┃ Labels                   ┃ Installed ┃
 ┡━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━┩
+│ helm     │ k8s                      │ ❌        │
 │ k3d      │ k8s,docker,orchestration │ ❌        │
 │ kind     │ k8s,docker,orchestration │ ✅        │
-│ minikube │ k8s,orchestration        │ ✅        │
 │ kubectl  │ k8s                      │ ✅        │
-│ helm     │ k8s                      │ ❌        │
+│ minikube │ k8s,orchestration        │ ✅        │
 └──────────┴──────────────────────────┴───────────┘
 ```
 
@@ -173,6 +173,51 @@ $ mercado list --installed-only --verbose
 ├───────────┼────────────┼────────────────────────────────────────────────────────────────┤
 │ docker    │ Shell      │ ✅ (/usr/bin/docker 20.10.21)                                  │
 └───────────┴────────────┴────────────────────────────────────────────────────────────────┘
+```
+
+<!-- [[[end]]] -->
+
+## Contribute
+
+<!-- [[[cog
+import cog
+from textwrap import dedent
+import subprocess
+
+def print_command(command):
+    cog.outl(dedent(f"""
+```bash
+$ {command}
+
+{subprocess.getoutput(command)}
+```
+    """))
+
+print_command("TERM='' make -s help")
+]]] -->
+
+```bash
+$ TERM='' make -s help
+
+
+Usage:
+  make <target>
+
+code
+  verify                run all verifications
+  test                  run tests
+  format                run formatter
+  lint                  run linter
+
+artifact
+  install               install package locally
+  dist                  generate package artifacts
+  docs                  generate documentation
+  deploy                deploy Python package to PyPI
+
+general
+  clean                 clean environment
+
 ```
 
 <!-- [[[end]]] -->
@@ -226,6 +271,5 @@ act --platform=ubuntu-latest=lucasalt/act_base:latest
 1. Run inside virtualenv
 
 ```bash
-pip install cogapp
 make docs
 ```

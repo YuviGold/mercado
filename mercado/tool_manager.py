@@ -19,9 +19,17 @@ class ToolManager:
                     return vendor, tool
         raise ValueError(f"Tool '{name}' is not supported. Check the full supported tools with 'marcado list'")
 
-    def get_supported_tools(self) -> list[tuple[str, list[Tool]]]:
-        for vendor, tools in self._vendors.items():
-            yield vendor.__class__.__name__, sorted(tools, key=lambda tool: tool.name)
+    def get_supported_tools(self, separate_vendors=False) -> list[tuple[str, list[Tool]]]:
+        if not separate_vendors:
+            all: list[tuple[str, Tool]] = []
+            for vendor, tools in self._vendors.items():
+                for tool in tools:
+                    all.append((vendor.__class__.__name__, tool))
+            for vendor_name, tool in sorted(all, key=lambda item: item[1].name):
+                yield vendor_name, [tool]
+        else:
+            for vendor, tools in self._vendors.items():
+                yield vendor.__class__.__name__, sorted(tools, key=lambda tool: tool.name)
 
     def get_latest_version(self, name: str) -> str:
         vendor, tool = self._get_tool(name)

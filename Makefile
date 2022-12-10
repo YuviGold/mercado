@@ -11,39 +11,39 @@ verify: format lint test  ## run all verifications
 
 .PHONY: test
 test: ## run tests
-	$(MAKE) _docker_$@
+	$(MAKE) -s _docker_$@
 
 .PHONY: format
 format: ## run formatter
-	$(MAKE) _docker_$@
+	$(MAKE) -s _docker_$@
 
 .PHONY: lint
 lint: ## run linter
-	$(MAKE) _docker_$@
+	$(MAKE) -s _docker_$@
 
 ##@ artifact
 
 .PHONY: install
 install: clean dist ## install package locally
-	$(MAKE) _$@
+	$(MAKE) -s _$@
 
 .PHONY: dist
 dist: ## generate package artifacts
-	$(MAKE) _$@
+	$(MAKE) -s _$@
 
 .PHONY: docs
 docs:  ## generate documentation
-	$(MAKE) _$@
+	$(MAKE) -s _$@
 
 .PHONY: deploy
 deploy: dist  ## deploy Python package to PyPI
-	$(MAKE) _$@
+	$(MAKE) -s _$@
 
 ##@ general
 
 .PHONY: clean
 clean:  ## clean environment
-	-$(MAKE) _$@
+	-$(MAKE) -s _$@
 
 _docker_%:
 	docker-compose build test && docker-compose run --rm test make _$*
