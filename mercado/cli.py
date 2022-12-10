@@ -36,7 +36,7 @@ def list_tools(filter_labels: list[Label] = Option(None, "--label", "-l"),
             table.add_column("Labels")
         table.add_column("Installed")
 
-    for vendor, tools in manager.get_supported_tools():
+    for vendor, tools in manager.get_supported_tools(separate_vendors=verbose):
         if verbose:
             table.add_section()
 

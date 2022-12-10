@@ -1,5 +1,9 @@
 function colorize(text, color) {
-    return color text COLOR_OFF;
+    if (ENVIRON["TERM"] == "xterm-color" || ENVIRON["TERM"] ~ /-256color$/) {
+         return color text COLOR_OFF;
+     } else {
+         return text
+     }
 }
 
 function help_category(title) {
