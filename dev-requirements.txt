@@ -18,7 +18,7 @@ jeepney==0.8.0
 keyring==23.11.0
 mccabe==0.7.0
 more-itertools==9.0.0
-packaging==21.3
+packaging==22.0
 pkginfo==1.9.2
 pluggy==1.0.0
 py==1.11.0
