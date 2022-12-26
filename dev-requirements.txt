@@ -6,7 +6,7 @@ cffi==1.15.1
 charset-normalizer==2.1.1
 cogapp==3.3.0
 commonmark==0.9.1
-cryptography==38.0.3
+cryptography==38.0.4
 docutils==0.19
 exceptiongroup==1.0.4
 flake8==5.0.4
