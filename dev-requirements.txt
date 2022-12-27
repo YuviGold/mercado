@@ -9,7 +9,7 @@ commonmark==0.9.1
 cryptography==38.0.4
 docutils==0.19
 exceptiongroup==1.0.4
-flake8==5.0.4
+flake8==6.0.0
 idna==3.4
 importlib-metadata==5.1.0
 iniconfig==1.1.1
