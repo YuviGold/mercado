@@ -5,4 +5,5 @@ set -o pipefail
 set -o errexit
 set -o xtrace
 
-./setup.py bdist_wheel
+# ./setup.py bdist_wheel
+poetry build
