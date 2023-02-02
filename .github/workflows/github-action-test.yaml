@@ -19,4 +19,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: make test
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
