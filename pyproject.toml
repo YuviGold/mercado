@@ -15,7 +15,7 @@ keywords = ["cli", "devops"]
 [tool.poetry.dependencies]
 python = "^3.10"
 
-humanize = "^4.4.0"
+humanize = "^4.5.0"
 requests = "^2.28.1"
 rich = "^12.6.0"
 typer = "^0.6.1"
