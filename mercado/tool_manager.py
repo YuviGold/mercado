@@ -1,6 +1,8 @@
 import logging
+from pathlib import Path
 
 from .tools import TOOLS
+from .utils import get_local_version, is_tool_available
 from .vendors.vendor import Installer, Tool, ToolVendor
 
 
@@ -50,6 +52,18 @@ class ToolManager:
 
         logging.info(f"Getting installer for tool '{tool.name}' with version {version} for {os} and {arch}")
         return vendor.get_installer(tool, version, os, arch)
+
+    def get_status(self, name: str) -> tuple[bool, bool, str, Path | None, str]:
+        tool = self.get_tool(name)
+        exists = is_tool_available(tool)
+        local_version = ''
+        path = None
+        latest_version = ''
+
+        if exists:
+            local_version, path = get_local_version(self.get_tool(name))
+            latest_version = self.get_latest_version(name)
+        return exists, local_version in latest_version, local_version, path, latest_version
 
 
 manager = ToolManager()

@@ -1,18 +1,24 @@
 import logging
 from os import environ
+from sys import exit
 
 from rich.console import Console
 from rich.logging import RichHandler
 from rich.table import Table
-from typer import Option, Typer
+from typer import Exit, Option, Typer
 
 from .tool_manager import manager
-from .utils import (get_host_architecture, get_host_operating_system,
-                    get_local_version, is_tool_available)
+from .utils import get_host_architecture, get_host_operating_system
 from .vendors.vendor import Label
 
 app = Typer()
 console = Console()
+
+
+def pretty_status(exists, is_latest):
+    if exists and not is_latest:
+        return ':arrow_double_up:'
+    return pretty_bool(exists)
 
 
 def pretty_bool(condition: bool) -> str:
@@ -24,9 +30,9 @@ def list_tools(filter_labels: list[Label] = Option(None, "--label", "-l"),
                verbose: bool = Option(False),
                names_only: bool = Option(False),
                with_labels: bool = Option(False),
-               installed_only: bool = Option(False)):
-    table = Table(title="Mercado tools")
-    table.add_column("Name")
+               all: bool = Option(False)):
+    table = Table(title="Mercado tools", header_style="bold magenta")
+    table.add_column("Name", style="bold")
 
     if not names_only:
         if verbose:
@@ -45,19 +51,18 @@ def list_tools(filter_labels: list[Label] = Option(None, "--label", "-l"),
                 if not any([label in tool.labels for label in filter_labels]):
                     continue
 
-            exists = is_tool_available(tool)
-            if installed_only and not exists:
+            exists, is_latest, version, path, _ = manager.get_status(tool.name)
+            if not exists and not all:
                 continue
 
             if names_only:
                 table.add_row(tool.name)
                 continue
 
-            exists_string = pretty_bool(exists)
+            exists_string = pretty_status(exists, is_latest)
 
             if verbose:
                 if exists:
-                    version, path = get_local_version(tool)
                     exists_string += f' ({path} {version})'
 
                 if with_labels:
@@ -89,15 +94,14 @@ def install_tool(names: list[str],
 
 
 @app.command('is-latest', help='Check if the current version is the latest one')
-def is_latest(name: str):
+def get_status(name: str):
     logging.disable(level=logging.WARNING)
 
-    local_version, path = get_local_version(manager.get_tool(name))
-    logging.info(f"'{name}' was found at {path} with version {local_version}")
+    _, is_latest, local_version, _, latest_version = manager.get_status(name)
 
-    latest_version = manager.get_latest_version(name)
-    if local_version not in latest_version:
+    if not is_latest:
         console.print(f":thumbs_down:\t'{name}' version '{latest_version}' is available! (current: {local_version})")
+        raise Exit(code=1)
     else:
         console.print(f":thumbs_up:\tYou have the latest version of '{name}' ({local_version})")
 
@@ -106,16 +110,12 @@ def is_latest(name: str):
 def show(name: str):
     logging.disable(level=logging.WARNING)
 
-    tool = manager.get_tool(name)
-
-    exists = is_tool_available(tool)
-    latest_version = manager.get_latest_version(name)
+    exists, is_latest, local_version, path, latest_version = manager.get_status(name)
 
     console.print(f'Name: {name}')
-    console.print(f'Installed: {pretty_bool(exists)}')
+    console.print(f'Status: {pretty_status(exists, is_latest)}')
 
     if exists:
-        local_version, path = get_local_version(tool)
         console.print(f'Local Version: {local_version}')
         console.print(f'Path: {path}')
     console.print(f'Remote Version: {latest_version}')
@@ -135,3 +135,4 @@ def main():
         app()
     except ValueError as ex:
         console.print(f':no_entry_sign:\t{ex}')
+        exit(1)
