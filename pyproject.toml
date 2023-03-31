@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mercado"
-version = "0.1.4"
+version = "0.1.5"
 description = "All-In-One Development CLI Tools Multi-platform Marketplace"
 
 authors = [

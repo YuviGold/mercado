@@ -33,7 +33,7 @@ dist: ## generate package artifacts
 
 .PHONY: docs
 docs:  ## generate documentation
-	$(MAKE) -s _docker_$@
+	$(MAKE) -s _$@
 
 .PHONY: deploy
 deploy: dist  ## deploy Python package to PyPI
