@@ -3,7 +3,7 @@ import platform
 import re
 import stat
 import subprocess
-from functools import partial
+from functools import cache, partial
 from glob import glob
 from http import HTTPStatus
 from os.path import basename
@@ -63,11 +63,18 @@ def get_local_version(tool: Tool) -> tuple[str, Path]:
 def get_command_version(command: str) -> str:
     res = subprocess.run(command.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=SUBPROCSES_TIMEOUT)
     output = res.stdout.decode().strip()
+    try:
+        return search_version(output)
+    except ValueError:
+        raise RuntimeError(f'Could not find a valid version for {command}')
+
+
+def search_version(text: str) -> str:
     match = re.search(
-        r'([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?', output)
+        r'([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?', text)
     if match:
         return match[0]
-    raise RuntimeError(f'Could not find a valid version for {command}')
+    raise ValueError('version could not been found in {text}')
 
 
 def get_tool_version(path: Path) -> str:
@@ -193,10 +200,12 @@ def _search_url(urls: list[str], func: Callable[[str], bool]) -> str:
     return ''
 
 
-def fetch_url(url: str) -> str:
+@cache
+def fetch_url(url: str, raise_for_status: bool = True) -> str:
     logging.debug(f"Fetching {url}")
     res = create_session().get(url)
-    res.raise_for_status()
+    if raise_for_status:
+        res.raise_for_status()
     return res.text
 
 

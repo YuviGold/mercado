@@ -34,7 +34,7 @@ class ShellRunner(Installer):
 
     def install(self):
         script = dedent(self._script(self.version))
-        logging.debug(f"Running {script}")
         with TemporaryDirectory() as tmp_dir:
+            logging.debug(f"Running {script} in {tmp_dir}")
             subprocess.check_call(script, env=self._env | {
                                   'PATH': f"{os.environ['PATH']}:{INSTALL_DIR}"}, shell=True, cwd=tmp_dir)

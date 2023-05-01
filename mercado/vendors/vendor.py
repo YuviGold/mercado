@@ -13,6 +13,7 @@ class Label(Enum):
     STORAGE = "storage"
     NETWORK = "network"
     ORCHESTRATE = "orchestration"
+    CLOUD = "cloud"
 
     DOCKER = "docker"
     K8S = "k8s"

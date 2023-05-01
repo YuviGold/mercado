@@ -30,13 +30,13 @@ import subprocess
 def print_command(command):
     cog.outl(dedent(f"""
 ```bash
-$ mercado {command}
+$ {command}
 
-{subprocess.getoutput(f"./main.py {command}")}
+{subprocess.getoutput(command)}
 ```
     """))
 
-print_command("list --names-only --all")
+print_command("mercado list --names-only --all")
 
 ]]] -->
 
@@ -47,6 +47,7 @@ Mercado tools
 ┏━━━━━━━━━━━━┓
 ┃ Name       ┃
 ┡━━━━━━━━━━━━┩
+│ aws        │
 │ compose    │
 │ consul     │
 │ cosign     │
@@ -107,47 +108,49 @@ print_command("mercado list --label k8s --with-labels --all")
 ```bash
 $ mercado list --verbose
 
-                                       Mercado tools                                        
-┏━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ Name       ┃ Vendor     ┃ Installed                                                      ┃
-┡━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│ compose    │ GitHub     │ ⏫ (/home/yuvalgold/.docker/cli-plugins/docker-compose 2.13.0) │
-│ gh         │ GitHub     │ ✅ (/home/yuvalgold/.mercado/gh 2.25.1)                        │
-│ kind       │ GitHub     │ ✅ (/home/yuvalgold/.mercado/kind 0.18.0)                      │
-│ minikube   │ GitHub     │ ✅ (/home/yuvalgold/.mercado/minikube 1.29.0)                  │
-│ terragrunt │ GitHub     │ ⏫ (/home/yuvalgold/.mercado/terragrunt 0.42.5)                │
-├────────────┼────────────┼────────────────────────────────────────────────────────────────┤
-│ consul     │ Hashicorp  │ ⏫ (/usr/local/bin/consul 1.13.1)                              │
-│ terraform  │ Hashicorp  │ ✅ (/home/yuvalgold/.mercado/terraform 1.4.4)                  │
-│ vagrant    │ Hashicorp  │ ⏫ (/home/yuvalgold/.mercado/vagrant 2.3.2)                    │
-│ vault      │ Hashicorp  │ ✅ (/home/yuvalgold/.mercado/vault 1.13.1)                     │
-├────────────┼────────────┼────────────────────────────────────────────────────────────────┤
-│ kubectl    │ URLFetcher │ ⏫ (/home/yuvalgold/.mercado/kubectl 1.25.3)                   │
-├────────────┼────────────┼────────────────────────────────────────────────────────────────┤
-│ docker     │ Shell      │ ⏫ (/usr/bin/docker 23.0.1)                                    │
-│ helm       │ Shell      │ ⏫ (/home/yuvalgold/.mercado/helm 3.11.0)                      │
-└────────────┴────────────┴────────────────────────────────────────────────────────────────┘
+                                      Mercado tools                                      
+┏━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Name       ┃ Vendor     ┃ Installed                                                   ┃
+┡━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ compose    │ GitHub     │ ✅ (/home/yuvalg/.docker/cli-plugins/docker-compose 2.17.3) │
+│ gh         │ GitHub     │ ✅ (/home/yuvalg/.mercado/gh 2.28.0)                        │
+│ kind       │ GitHub     │ ✅ (/home/yuvalg/.mercado/kind 0.18.0)                      │
+│ minikube   │ GitHub     │ ✅ (/home/yuvalg/.mercado/minikube 1.30.1)                  │
+│ terragrunt │ GitHub     │ ⏫ (/home/yuvalg/.mercado/terragrunt 0.42.5)                │
+│ trivy      │ GitHub     │ ⏫ (/home/yuvalg/.mercado/trivy 0.32.1)                     │
+├────────────┼────────────┼─────────────────────────────────────────────────────────────┤
+│ consul     │ Hashicorp  │ ⏫ (/home/yuvalg/.mercado/consul 1.13.1)                    │
+│ terraform  │ Hashicorp  │ ✅ (/home/yuvalg/.mercado/terraform 1.4.6)                  │
+│ vagrant    │ Hashicorp  │ ⏫ (/home/yuvalg/.mercado/vagrant 2.3.2)                    │
+│ vault      │ Hashicorp  │ ✅ (/home/yuvalg/.mercado/vault 1.13.2)                     │
+├────────────┼────────────┼─────────────────────────────────────────────────────────────┤
+│ kubectl    │ URLFetcher │ ⏫ (/usr/local/bin/kubectl 1.18.3)                          │
+├────────────┼────────────┼─────────────────────────────────────────────────────────────┤
+│ aws        │ Shell      │ ✅ (/home/yuvalg/.mercado/aws 2.11.16)                      │
+│ docker     │ Shell      │ ⏫ (/usr/bin/docker 20.10.12)                               │
+│ helm       │ Shell      │ ⏫ (/home/yuvalg/.mercado/helm 3.11.0)                      │
+└────────────┴────────────┴─────────────────────────────────────────────────────────────┘
 ```
 
 
 ```bash
 $ mercado install gh
 
-[03/31/23 17:18:48] Looking for the latest version of 'gh'                                                                                                                                                 
-[03/31/23 17:18:49] Getting installer for tool 'gh' with version v2.25.1 for linux and x86_64                                                                                                              
-                    Installing 'gh'...                                                                                                                                                                     
-[03/31/23 17:18:50] Downloading 'gh' to /tmp/gh_2.25.1_linux_amd64.tar.gz (size: 10.1 MB)                                                                                                                  
+[05/01/23 19:19:10] Looking for the latest version of 'gh'                                                                                                                                                 
+                    Getting installer for tool 'gh' with version v2.28.0 for linux and x86_64                                                                                                              
+[05/01/23 19:19:11] Installing 'gh'...                                                                                                                                                                     
+[05/01/23 19:19:12] Downloading 'gh' to /tmp/gh_2.28.0_linux_amd64.tar.gz (size: 10.1 MB)                                                                                                                  
 Downloading... ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:00
-[03/31/23 17:18:51] Unpacking /tmp/gh_2.25.1_linux_amd64.tar.gz to /tmp/gh_2.25.1_linux_amd64.tar                                                                                                          
-                    Copying /tmp/gh_2.25.1_linux_amd64.tar/gh_2.25.1_linux_amd64/bin/gh to /home/yuvalgold/.mercado/gh                                                                                     
-👍       'gh' version v2.25.1 is installed
+[05/01/23 19:19:13] Unpacking /tmp/gh_2.28.0_linux_amd64.tar.gz to /tmp/gh_2.28.0_linux_amd64.tar                                                                                                          
+[05/01/23 19:19:14] Copying /tmp/gh_2.28.0_linux_amd64.tar/gh_2.28.0_linux_amd64/bin/gh to /home/yuvalg/.mercado/gh                                                                                        
+👍       'gh' version v2.28.0 is installed
 ```
 
 
 ```bash
 $ mercado is-latest docker
 
-👎       'docker' version 'v23.0.2' is available! (current: 23.0.1)
+👎       'docker' version 'v23.0.5' is available! (current: 20.10.12)
 ```
 
 
@@ -156,9 +159,9 @@ $ mercado show minikube
 
 Name: minikube
 Status: ✅
-Local Version: 1.29.0
-Path: /home/yuvalgold/.mercado/minikube
-Remote Version: v1.29.0
+Local Version: 1.30.1
+Path: /home/yuvalg/.mercado/minikube
+Remote Version: v1.30.1
 ```
 
 

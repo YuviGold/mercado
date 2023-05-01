@@ -1,8 +1,8 @@
 
-from .utils import INSTALL_DIR
 from os import environ
 from pathlib import Path
 
+from .utils import INSTALL_DIR, fetch_url, search_version
 from .vendors.github import GitHub, GitHubTool
 from .vendors.hashicorp import Hashicorp
 from .vendors.shell import Shell, ShellTool
@@ -56,6 +56,15 @@ TOOLS: dict[ToolVendor, list[Tool]] = {
                   download_script=lambda version: f"""
                   curl -fsSL https://get.docker.com -o get-docker.sh
                   VERSION={version} sh get-docker.sh
+                  """
+                  ),
+        ShellTool("aws", labels=(Label.CLOUD,),
+                  get_latest_version=lambda: search_version(
+                      fetch_url('https://awscli.amazonaws.com/latest/', raise_for_status=False)),
+                  download_script=lambda version: f"""
+                  curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-{version}.zip" -o "awscliv2.zip"
+                  unzip -q awscliv2.zip
+                  ./aws/install --bin-dir {str(INSTALL_DIR)} --install-dir {str(INSTALL_DIR / "aws-cli")} --update
                   """
                   )
     ]
