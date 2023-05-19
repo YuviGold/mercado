@@ -41,6 +41,10 @@ deploy: dist  ## deploy Python package to PyPI
 
 ##@ general
 
+.PHONY: deps
+deps:  ## install dependencies
+	$(MAKE) -s _$@	
+
 .PHONY: clean
 clean:  ## clean environment
 	-$(MAKE) -s _$@
