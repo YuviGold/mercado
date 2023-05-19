@@ -74,7 +74,7 @@ Mercado tools
 ## Install
 
 ```bash
-python -m pip install mercado
+python3 -m pip install mercado
 ```
 
 ## How to use
@@ -261,10 +261,21 @@ mercado --help
 ### Run GHA
 
 I use [nektos/act](https://github.com/nektos/act) tool to run the Git Hub Action locally.
-By default, act runs on a slim container image, for docker-compose usage the base image is replaced.
 
 ```bash
-act --platform=ubuntu-latest=lucasalt/act_base:latest -j <JOB>
+act -j <JOB>
+```
+
+In order to run a specific test, set the appropriate OS and environment variable
+
+```bash
+act -j test --env TEST_FUNC=k3d --matrix os:ubuntu-latest
+```
+
+When local execution does not help, we can enable a remote debug with [tmate](https://github.com/marketplace/actions/debugging-with-tmate)
+
+```bash
+gh workflow run Test --ref <branch_name> -f debug_enabled=true
 ```
 
 ## Generate docs
