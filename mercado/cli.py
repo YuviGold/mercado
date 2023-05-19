@@ -5,7 +5,7 @@ from sys import exit
 from rich.console import Console
 from rich.logging import RichHandler
 from rich.table import Table
-from typer import Exit, Option, Typer
+from typer import Context, Exit, Option, Typer
 
 from .tool_manager import manager
 from .utils import get_host_architecture, get_host_operating_system
@@ -95,8 +95,6 @@ def install_tool(names: list[str],
 
 @app.command('is-latest', help='Check if the current version is the latest one')
 def get_status(name: str):
-    logging.disable(level=logging.WARNING)
-
     _, is_latest, local_version, _, latest_version = manager.get_status(name)
 
     if not is_latest:
@@ -108,8 +106,6 @@ def get_status(name: str):
 
 @app.command('show', help='Print information about the supported tool')
 def show(name: str):
-    logging.disable(level=logging.WARNING)
-
     exists, is_latest, local_version, path, latest_version = manager.get_status(name)
 
     console.print(f'Name: {name}')
@@ -121,16 +117,22 @@ def show(name: str):
     console.print(f'Remote Version: {latest_version}')
 
 
-def init_logger():
-    LOGLEVEL = environ.get('LOGLEVEL', 'INFO').upper()
+def init_logger(default_level: int = logging.INFO):
+    LOGLEVEL = environ.get('LOGLEVEL', logging.getLevelName(default_level)).upper()
     logging.basicConfig(level=LOGLEVEL,
                         format='%(message)s',
                         handlers=[RichHandler(show_level=False, show_path=False)])
 
 
-def main():
-    init_logger()
+@app.callback()
+def cli_logging(ctx: Context):
+    if ctx.invoked_subcommand in ('show', 'is-latest'):
+        init_logger(logging.ERROR)
+    else:
+        init_logger(logging.INFO)
 
+
+def main():
     try:
         app()
     except ValueError as ex:
