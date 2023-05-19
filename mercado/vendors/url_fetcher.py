@@ -2,11 +2,12 @@
 import logging
 from dataclasses import dataclass
 from http import HTTPStatus
-from typing import Callable
 from pathlib import Path
+from typing import Callable
 
-from ..utils import (create_session, download_url, fetch_url,
-                     get_architecture_variations, default_install_path)
+from ..utils import (create_session, default_install_path, download_url,
+                     fetch_url, get_architecture_variations,
+                     get_operating_system_variations)
 from .vendor import Installer, Tool, ToolVendor
 
 
@@ -21,7 +22,8 @@ class URLFetcher(ToolVendor):
                     url_template: Callable[[str, str], str]) -> str:
         urls = []
         for arch in get_architecture_variations(arch):
-            urls.append(url_template(os, arch, version))
+            for os in get_operating_system_variations(os):
+                urls.append(url_template(os, arch, version))
 
         logging.debug(f"Tool {tool.name} has the following urls: {urls}")
 

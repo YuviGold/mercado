@@ -9,7 +9,7 @@ from typing import Callable, Optional
 from requests import Session
 
 from ..utils import (choose_url, create_session, get_architecture_variations,
-                     is_valid_architecture)
+                     is_valid_architecture, is_valid_os)
 from .url_fetcher import URLDownloader
 from .vendor import Installer, Tool, ToolVendor
 
@@ -67,7 +67,7 @@ class GitHub(ToolVendor):
                     return asset['browser_download_url']
 
             if re.search(tool.name, asset['name'], re.IGNORECASE) and \
-               re.search(os, asset['name'], re.IGNORECASE) and \
+               is_valid_os(expected=os, actual=asset['name']) and \
                is_valid_architecture(expected=arch, actual=asset['name']):
                 valid_assets_urls.append(asset['browser_download_url'])
 
@@ -82,7 +82,9 @@ class GitHub(ToolVendor):
     def get_installer(self, tool: GitHubTool, version: str, os: str, arch: str) -> Installer:
         res = self._get_release_by_tag(tool, version)
         url = self._get_asset_url(tool, os, arch, res['assets'])
+
         if not url:
             raise ValueError(f'There is no available asset {tool.name} for {os=}, {arch=}, {version=}')
 
+        logging.debug(f'Found {tool.name} with version {version} on URL {url}')
         return URLDownloader(tool.name, version, url, tool.target)

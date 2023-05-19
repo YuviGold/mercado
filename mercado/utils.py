@@ -21,6 +21,7 @@ from urllib3 import Retry
 from .vendors.vendor import Tool
 
 MATRIX_X86_64 = ('amd64', 'x86_64', '64bit')
+MARRIX_MAC = ('darwin', 'macos')
 INSTALL_DIR = Path.home() / ".mercado"
 CHUNK_SIZE = 1024
 REQUEST_MAX_TIMEOUT = 10
@@ -35,12 +36,29 @@ def get_architecture_variations(arch: str) -> list[str]:
     return [arch]
 
 
+def get_operating_system_variations(os: str) -> list[str]:
+    if os in MARRIX_MAC:
+        return MARRIX_MAC
+    return [os]
+
+
 def is_valid_architecture(expected: str, actual: str) -> bool:
     '''
     Equalize architectures that their name does not necessarily match
     '''
-    for arch in get_architecture_variations(expected):
-        if re.search(arch, actual, re.IGNORECASE):
+    return contains_ignore_case(actual, get_architecture_variations(expected))
+
+
+def is_valid_os(expected: str, actual: str) -> bool:
+    '''
+    Equalize operating system that their name does not necessarily match
+    '''
+    return contains_ignore_case(actual, get_operating_system_variations(expected))
+
+
+def contains_ignore_case(item: str, lst: list[str]):
+    for element in lst:
+        if re.search(element, item, re.IGNORECASE):
             return True
 
     return False
