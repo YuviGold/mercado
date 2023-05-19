@@ -11,12 +11,10 @@ ENV \
   PIP_DEFAULT_TIMEOUT=100 \
   PATH="${PATH}:${HOME}/root/.mercado"
 
-RUN pip install "poetry==1.2.2"
-
 WORKDIR /app
-COPY poetry.lock pyproject.toml /app/
+COPY Makefile poetry.lock pyproject.toml /app/
+COPY hack/deps.sh /app/hack/deps.sh
 
-RUN poetry config virtualenvs.create false \
-  && poetry install --no-interaction --no-ansi
+RUN make deps
 
 COPY . /app

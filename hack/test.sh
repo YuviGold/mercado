@@ -5,4 +5,4 @@ set -o pipefail
 set -o errexit
 set -o xtrace
 
-python -m pytest --log-cli-level="${LOGLEVEL:-info}" -s --verbose "${TEST:-tests}" -k "${TEST_FUNC:-}"
+python3 -m pytest --log-cli-level="${LOGLEVEL:-info}" -s --verbose "${TEST:-tests}" -k "${TEST_FUNC:-}"

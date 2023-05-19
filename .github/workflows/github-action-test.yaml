@@ -7,18 +7,59 @@ on:
     branches:
       - main
   pull_request:
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+        required: false
+        default: false
+
+env:
+  LOGLEVEL: DEBUG
+
+  # Supporting AppImage artifacts
+  # https://github.com/AppImage/AppImageKit/issues/912#issuecomment-528669441
+  APPIMAGE_EXTRACT_AND_RUN: 1
 
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - uses: KengoTODA/actions-setup-docker-compose@v1
+        with:
+          version: '2.14.2'
       - run: make lint
   test:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
-      - run: make test
+      # Installing python directly due to poetry issue with upstream python
+      # https://github.com/python-poetry/poetry/issues/7343
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10' 
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.4.2
+          virtualenvs-create: false
+      - name: Install dependencies
+        run: |
+          make deps
+          echo "$HOME/.mercado" >> $GITHUB_PATH
+      # Allow debugging with tmate
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+        with:
+          limit-access-to-actor: true
+      - name: Run tests
+        run: make _test
         env:
           GITHUB_TOKEN: ${{ github.token }}
 

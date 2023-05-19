@@ -1,7 +1,9 @@
+import logging
 from functools import cache
 from http import HTTPStatus
 
-from ..utils import choose_url, create_session, is_valid_architecture
+from ..utils import (choose_url, create_session, is_valid_architecture,
+                     is_valid_os)
 from .url_fetcher import URLDownloader
 from .vendor import Installer, Tool, ToolVendor
 
@@ -38,9 +40,11 @@ class Hashicorp(ToolVendor):
         valid_assets_urls = []
 
         for item in builds:
-            if os == item['os'] and is_valid_architecture(expected=arch, actual=item['arch']):
+            if is_valid_os(expected=os, actual=item['os']) and \
+               is_valid_architecture(expected=arch, actual=item['arch']):
                 valid_assets_urls.append(item['url'])
 
+        logging.debug(f"Looking for the best url from: {valid_assets_urls}")
         return choose_url(valid_assets_urls)
 
     @cache
@@ -54,4 +58,5 @@ class Hashicorp(ToolVendor):
         if not url:
             raise ValueError(f'There is no available build {tool.name} for {os=}, {arch=}, {version=}')
 
+        logging.debug(f'Found {tool.name} with version {version} on URL {url}')
         return URLDownloader(tool.name, version, url, tool.target)
