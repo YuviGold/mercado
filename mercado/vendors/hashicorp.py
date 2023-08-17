@@ -39,6 +39,8 @@ class Hashicorp(ToolVendor):
     def _get_build_url(self, os: str, arch: str, builds: list[dict[str, str]]) -> str:
         valid_assets_urls = []
 
+        logging.debug(f"Available builds: {[build['url'] for build in builds]}")
+
         for item in builds:
             if is_valid_os(expected=os, actual=item['os']) and \
                is_valid_architecture(expected=arch, actual=item['arch']):
