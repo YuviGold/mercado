@@ -3,6 +3,7 @@ import platform
 import re
 import stat
 import subprocess
+from contextlib import suppress
 from functools import cache, partial
 from glob import glob
 from http import HTTPStatus
@@ -24,6 +25,8 @@ MATRIX_X86_64 = ('amd64', 'x86_64', '64bit')
 MATRIX_ARM64 = ('arm64', 'aarch64')
 MATRIX_MAC = ('darwin', 'macos')
 INSTALL_DIR = Path.home() / ".mercado"
+PACKAGES_DIR = INSTALL_DIR / "packages"
+PKG_PAYLOAD_FILE = 'Payload'
 CHUNK_SIZE = 1024
 REQUEST_MAX_TIMEOUT = 10
 STREAM_MAX_TIMEOUT = 300
@@ -127,6 +130,8 @@ def is_tool_available_in_path(name: str) -> bool:
 
 
 def download_url(name: str, url: str, dest: Path):
+    dest.parent.mkdir(exist_ok=True, parents=True)
+
     logging.debug(f'Download {url}')
 
     with create_session().get(url, stream=True, timeout=STREAM_MAX_TIMEOUT) as r:
@@ -143,15 +148,20 @@ def download_url(name: str, url: str, dest: Path):
                     file.write(data)
                 progress.advance(task, CHUNK_SIZE)
 
+        should_link = False
         if is_archive(str(temp_file)):
             temp_file = extract_file_from_archive(temp_file, name)
 
         if is_dmg(str(temp_file)):
-            temp_file = extract_file_from_dmg(temp_file, name)
+            temp_file, should_link = extract_file_from_dmg(temp_file, name)
 
-        logging.info(f"Copying {temp_file} to {dest}")
-        dest.parent.mkdir(exist_ok=True, parents=True)
-        copy(temp_file, dest)
+        if should_link:
+            logging.info(f"Linking {temp_file} to {dest}")
+            dest.unlink(missing_ok=True)
+            dest.symlink_to(temp_file)
+        else:
+            logging.info(f"Copying {temp_file} to {dest}")
+            copy(temp_file, dest)
 
         dest.chmod(dest.stat().st_mode | stat.S_IEXEC)
 
@@ -174,13 +184,13 @@ def is_dmg(path: str) -> bool:
     return path.endswith('.dmg')
 
 
-def extract_file_from_dmg(path: Path, file_name: str) -> Path:
+def extract_file_from_dmg(path: Path, file_name: str) -> (Path, bool):
     unpack_dest = path.with_suffix('')
     unpack_dest.mkdir(exist_ok=True)
     logging.info(f"Unpacking {path} to {unpack_dest}")
 
     # Mount the DMG
-    subprocess.check_call(f"hdiutil attach {path} -mountpoint {unpack_dest}", shell=True)
+    subprocess.check_call(f"hdiutil attach {path} -mountpoint {unpack_dest} -quiet", shell=True)
 
     try:
         app_files = glob(f"{unpack_dest}/**/{file_name}.app", recursive=True)
@@ -188,11 +198,11 @@ def extract_file_from_dmg(path: Path, file_name: str) -> Path:
 
         if app_files:
             assert len(app_files) == 1, f"There should be one .app file in the dmg with the name {file_name}"
-            return Path(app_files[0])
+            return Path(app_files[0]), False
 
         elif pkg_files:
             assert len(pkg_files) == 1, f"There should be one .pkg file in the dmg with the name {file_name}"
-            return extract_file_from_pkg(Path(pkg_files[0]), file_name)
+            return extract_file_from_pkg(Path(pkg_files[0]), file_name), True
         else:
             raise Exception("No .app or .pkg files found in the DMG!")
 
@@ -206,12 +216,16 @@ def extract_file_from_pkg(path: Path, file_name: str) -> Path:
     temp_dir.mkdir(exist_ok=True)
     logging.info(f"Unpacking {path} to {temp_dir}")
 
+    # Unpack pkg file
     subprocess.check_call(f"tar -xf {path} -C {temp_dir}", shell=True)
-    payload_file = glob(f"{temp_dir}/**/Payload", recursive=True)
-    assert len(payload_file) == 1, f"There should be one Payload file extracted from the pkg file {path}"
+    payload_file = glob(f"{temp_dir}/**/{PKG_PAYLOAD_FILE}", recursive=True)
+    assert len(payload_file) == 1, f"There should be one {PKG_PAYLOAD_FILE} file extracted from the pkg file {path}"
 
-    unpack_dest = Path(temp_dir) / file_name
-    unpack_dest.mkdir(exist_ok=True)
+    # Unpack Payload file
+    unpack_dest = PACKAGES_DIR / file_name
+    unpack_dest.mkdir(exist_ok=True, parents=True)
+    logging.info(f"Unpacking {payload_file[0]} to {unpack_dest}")
+
     subprocess.check_call(f"tar -xf {payload_file[0]} -C {unpack_dest}", shell=True)
 
     matches = glob(f"{unpack_dest}/**/{file_name}", recursive=True)
@@ -222,7 +236,7 @@ def extract_file_from_pkg(path: Path, file_name: str) -> Path:
             binaries.append(match)
 
     # TODO: Find a workaround for the fact that the pkg file contains multiple binaries
-    assert len(binaries) == 1, f"There should be one binary in the archive with the name {file_name}"
+    # assert len(binaries) == 1, f"There should be one binary in the archive with the name {file_name}"
     return Path(binaries[0])
 
 

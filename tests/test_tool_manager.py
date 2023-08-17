@@ -10,7 +10,7 @@ def test_get_installer_invalid_tool(toolmanager: ToolManager, os: str, arch: str
 
 @pytest.mark.parametrize("tool", [t.name for _, tools in ToolManager().get_supported_tools() for t in tools])
 def test_get_installer_happy_flow(toolmanager: ToolManager, tool: str, os: str, arch: str):
-    if is_valid_os('darwin', os) and tool in ("docker", "aws", "vagrant"):
+    if is_valid_os('darwin', os) and tool in ("docker", "aws"):
         pytest.xfail("Not supported on Darwin")
 
     installer = toolmanager.get_installer(tool, os, arch)
