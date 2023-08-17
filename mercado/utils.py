@@ -146,6 +146,9 @@ def download_url(name: str, url: str, dest: Path):
         if is_archive(str(temp_file)):
             temp_file = extract_file_from_archive(temp_file, name)
 
+        if is_dmg(str(temp_file)):
+            temp_file = extract_file_from_dmg(temp_file, name)
+
         logging.info(f"Copying {temp_file} to {dest}")
         dest.parent.mkdir(exist_ok=True, parents=True)
         copy(temp_file, dest)
@@ -164,7 +167,63 @@ def extract_file_from_archive(path: Path, file_name: str) -> Path:
     unpack_archive(path, extract_dir=unpack_dest)
     matches = glob(f"{unpack_dest}/**/{file_name}", recursive=True)
     assert len(matches) == 1, f"There should be one file in the archive with the name {file_name}"
-    return matches[0]
+    return Path(matches[0])
+
+
+def is_dmg(path: str) -> bool:
+    return path.endswith('.dmg')
+
+
+def extract_file_from_dmg(path: Path, file_name: str) -> Path:
+    unpack_dest = path.with_suffix('')
+    unpack_dest.mkdir(exist_ok=True)
+    logging.info(f"Unpacking {path} to {unpack_dest}")
+
+    # Mount the DMG
+    subprocess.check_call(f"hdiutil attach {path} -mountpoint {unpack_dest}", shell=True)
+
+    try:
+        app_files = glob(f"{unpack_dest}/**/{file_name}.app", recursive=True)
+        pkg_files = glob(f"{unpack_dest}/**/{file_name}.pkg", recursive=True)
+
+        if app_files:
+            assert len(app_files) == 1, f"There should be one .app file in the dmg with the name {file_name}"
+            return Path(app_files[0])
+
+        elif pkg_files:
+            assert len(pkg_files) == 1, f"There should be one .pkg file in the dmg with the name {file_name}"
+            return extract_file_from_pkg(Path(pkg_files[0]), file_name)
+        else:
+            raise Exception("No .app or .pkg files found in the DMG!")
+
+    finally:
+        # Unmount the DMG
+        subprocess.check_call(["hdiutil", "detach", unpack_dest])
+
+
+def extract_file_from_pkg(path: Path, file_name: str) -> Path:
+    temp_dir = Path(gettempdir()) / basename(path)
+    temp_dir.mkdir(exist_ok=True)
+    logging.info(f"Unpacking {path} to {temp_dir}")
+
+    subprocess.check_call(f"tar -xf {path} -C {temp_dir}", shell=True)
+    payload_file = glob(f"{temp_dir}/**/Payload", recursive=True)
+    assert len(payload_file) == 1, f"There should be one Payload file extracted from the pkg file {path}"
+
+    unpack_dest = Path(temp_dir) / file_name
+    unpack_dest.mkdir(exist_ok=True)
+    subprocess.check_call(f"tar -xf {payload_file[0]} -C {unpack_dest}", shell=True)
+
+    matches = glob(f"{unpack_dest}/**/{file_name}", recursive=True)
+    binaries = []
+    for match in matches:
+        with suppress(FileNotFoundError, ValueError, RuntimeError):
+            _ = get_tool_version(Path(match), silent=True)
+            binaries.append(match)
+
+    # TODO: Find a workaround for the fact that the pkg file contains multiple binaries
+    assert len(binaries) == 1, f"There should be one binary in the archive with the name {file_name}"
+    return Path(binaries[0])
 
 
 def create_session():
@@ -199,6 +258,10 @@ def choose_url(urls: list[str]) -> str:
 
     # Priority #2 - an archive if available
     if url := _search_url(urls, is_archive):
+        return url
+
+    # search url if dmg file
+    if url := _search_url(urls, is_dmg):
         return url
 
     raise ValueError(f"Could not find a valid URL inside {urls}. Please file a bug")
