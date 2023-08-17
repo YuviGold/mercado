@@ -49,17 +49,21 @@ def get_operating_system_variations(os: str) -> Sequence[str]:
 
 
 def is_valid_architecture(expected: str, actual: str) -> bool:
-    '''
+    """
     Equalize architectures that their name does not necessarily match
-    '''
+    """
     return contains_ignore_case(actual, get_architecture_variations(expected))
 
 
 def is_valid_os(expected: str, actual: str) -> bool:
-    '''
+    """
     Equalize operating system that their name does not necessarily match
-    '''
+    """
     return contains_ignore_case(actual, get_operating_system_variations(expected))
+
+
+def is_darwin_os(os: str) -> bool:
+    return is_valid_os('darwin', os)
 
 
 def contains_ignore_case(item: str, lst: Sequence[str]):
