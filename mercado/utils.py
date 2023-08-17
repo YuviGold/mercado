@@ -10,7 +10,7 @@ from os.path import basename
 from pathlib import Path
 from shutil import copy, get_unpack_formats, unpack_archive, which
 from tempfile import gettempdir
-from typing import Callable
+from typing import Callable, Sequence
 
 from humanize import naturalsize
 from requests import Session
@@ -21,7 +21,8 @@ from urllib3 import Retry
 from .vendors.vendor import Tool
 
 MATRIX_X86_64 = ('amd64', 'x86_64', '64bit')
-MARRIX_MAC = ('darwin', 'macos')
+MATRIX_ARM64 = ('arm64', 'aarch64')
+MATRIX_MAC = ('darwin', 'macos')
 INSTALL_DIR = Path.home() / ".mercado"
 CHUNK_SIZE = 1024
 REQUEST_MAX_TIMEOUT = 10
@@ -30,15 +31,17 @@ SUBPROCSES_TIMEOUT = 30
 SUPPORTED_ARCHIVE_FORMATS: list[str] = sum([format[1] for format in get_unpack_formats()], [])
 
 
-def get_architecture_variations(arch: str) -> list[str]:
+def get_architecture_variations(arch: str) -> Sequence[str]:
     if arch in MATRIX_X86_64:
         return MATRIX_X86_64
+    if arch in MATRIX_ARM64:
+        return MATRIX_ARM64
     return [arch]
 
 
-def get_operating_system_variations(os: str) -> list[str]:
-    if os in MARRIX_MAC:
-        return MARRIX_MAC
+def get_operating_system_variations(os: str) -> Sequence[str]:
+    if os in MATRIX_MAC:
+        return MATRIX_MAC
     return [os]
 
 
@@ -56,7 +59,7 @@ def is_valid_os(expected: str, actual: str) -> bool:
     return contains_ignore_case(actual, get_operating_system_variations(expected))
 
 
-def contains_ignore_case(item: str, lst: list[str]):
+def contains_ignore_case(item: str, lst: Sequence[str]):
     for element in lst:
         if re.search(element, item, re.IGNORECASE):
             return True
@@ -95,7 +98,7 @@ def search_version(text: str) -> str:
     raise ValueError('version could not been found in {text}')
 
 
-def get_tool_version(path: Path) -> str:
+def get_tool_version(path: Path, silent: bool = False) -> str:
     if not which(path):
         raise FileNotFoundError(path)
 
@@ -104,7 +107,8 @@ def get_tool_version(path: Path) -> str:
         try:
             return get_command_version(command)
         except RuntimeError as ex:
-            logging.debug(ex)
+            if not silent:
+                logging.debug(ex)
     raise ValueError(path)
 
 
