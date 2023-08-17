@@ -3,7 +3,7 @@ from os import environ
 from pathlib import Path
 
 from .utils import (INSTALL_DIR, PACKAGES_DIR, fetch_url, is_darwin_os,
-                    search_version)
+                    search_version, is_arm64_arch)
 from .vendors.github import GitHub, GitHubTool
 from .vendors.hashicorp import Hashicorp
 from .vendors.shell import Shell, ShellTool
@@ -54,9 +54,15 @@ TOOLS: dict[ToolVendor, list[Tool]] = {
                   ),
         ShellTool("docker", labels=(Label.VIRT, Label.DOCKER),
                   get_latest_version=lambda: GitHub().get_latest_version(GitHubTool('moby', repository='moby/moby')),
-                  download_script=lambda version, *_: f"""
+                  download_script=lambda version, os, arch: f"""
                   curl -fsSL https://get.docker.com -o get-docker.sh
                   VERSION={version} sh get-docker.sh
+                  """ if not is_darwin_os(os) else f"""
+                    arch={'aarch64' if is_arm64_arch(arch) else 'x86_64'}
+                    curl "https://download.docker.com/mac/static/stable/${{arch}}/docker-{version.lstrip('v')}.tgz" \\
+                        -o docker.tgz
+                    tar -xf docker.tgz
+                    find . -type f -name docker -exec mv {{}} {str(INSTALL_DIR / "docker")} \\;
                   """
                   ),
         ShellTool("aws", labels=(Label.CLOUD,),
@@ -67,13 +73,13 @@ TOOLS: dict[ToolVendor, list[Tool]] = {
                   unzip -q awscliv2.zip
                   ./aws/install --bin-dir {str(INSTALL_DIR)} --install-dir {str(INSTALL_DIR / "aws-cli")} --update
                   """ if not is_darwin_os(os) else f"""
-                    curl "https://awscli.amazonaws.com/AWSCLIV2-{version}.pkg" -o "AWSCLIV2.pkg"
-                    tar -xf AWSCLIV2.pkg
-                    pkg_dir={str(PACKAGES_DIR / "aws-cli")}
-                    mkdir -p ${{pkg_dir}}
-                    find . -type f -name Payload -exec tar -xvf {{}} -C ${{pkg_dir}} \\;
-                    ln -f -s `find ${{pkg_dir}} -type f -name aws` {str(INSTALL_DIR / "aws")}
-                """
+                  curl "https://awscli.amazonaws.com/AWSCLIV2-{version}.pkg" -o "AWSCLIV2.pkg"
+                  tar -xf AWSCLIV2.pkg
+                  pkg_dir={str(PACKAGES_DIR / "aws-cli")}
+                  mkdir -p ${{pkg_dir}}
+                  find . -type f -name Payload -exec tar -xf {{}} -C ${{pkg_dir}} \\;
+                  ln -f -s `find ${{pkg_dir}} -type f -name aws` {str(INSTALL_DIR / "aws")}
+                  """
                   )
     ]
 }

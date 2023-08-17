@@ -62,6 +62,14 @@ def is_valid_os(expected: str, actual: str) -> bool:
     return contains_ignore_case(actual, get_operating_system_variations(expected))
 
 
+def is_amd64_arch(arch: str) -> bool:
+    return is_valid_architecture('amd64', arch)
+
+
+def is_arm64_arch(arch: str) -> bool:
+    return is_valid_architecture('arm64', arch)
+
+
 def is_darwin_os(os: str) -> bool:
     return is_valid_os('darwin', os)
 
