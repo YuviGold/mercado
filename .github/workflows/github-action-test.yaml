@@ -25,7 +25,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: KengoTODA/actions-setup-docker-compose@v1
         with:
           version: '2.14.2'
@@ -37,7 +37,7 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       # Installing python directly due to poetry issue with upstream python
       # https://github.com/python-poetry/poetry/issues/7343
       - uses: actions/setup-python@v4
