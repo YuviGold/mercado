@@ -23,6 +23,7 @@ TOOLS: dict[ToolVendor, list[Tool]] = {
         GitHubTool('minikube', labels=(Label.K8S, Label.ORCHESTRATE), repository='kubernetes/minikube'),
         GitHubTool('compose', labels=(Label.VIRT, Label.DOCKER, Label.ORCHESTRATE), repository='docker/compose',
                    target=Path(environ.get('DOCKER_CONFIG', Path.home() / ".docker")) / "cli-plugins/docker-compose"),
+        GitHubTool('k9s', labels=(Label.K8S,), repository='derailed/k9s'),
     ],
 
     Hashicorp(): [
