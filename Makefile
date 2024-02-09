@@ -1,3 +1,5 @@
+COMPOSE = docker compose
+
 all: verify dist
 
 .PHONY: help
@@ -50,7 +52,7 @@ clean:  ## clean environment
 	-$(MAKE) -s _$@
 
 _docker_%:
-	docker-compose build test && docker-compose run --rm test make _$*
+	${COMPOSE} build test && ${COMPOSE} run --rm test make _$*
 
 _%:
 	./hack/$*.sh
