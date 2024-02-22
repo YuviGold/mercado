@@ -23,11 +23,11 @@ class ToolManager:
 
     def get_supported_tools(self, separate_vendors=False) -> list[tuple[str, list[Tool]]]:
         if not separate_vendors:
-            all: list[tuple[str, Tool]] = []
+            all_vendors: list[tuple[str, Tool]] = []
             for vendor, tools in self._vendors.items():
                 for tool in tools:
-                    all.append((vendor.__class__.__name__, tool))
-            for vendor_name, tool in sorted(all, key=lambda item: item[1].name):
+                    all_vendors.append((vendor.__class__.__name__, tool))
+            for vendor_name, tool in sorted(all_vendors, key=lambda item: item[1].name):
                 yield vendor_name, [tool]
         else:
             for vendor, tools in self._vendors.items():
@@ -53,9 +53,11 @@ class ToolManager:
         logging.info(f"Getting installer for tool '{tool.name}' with version {version} for {os} and {arch}")
         return vendor.get_installer(tool, version, os, arch)
 
+    def is_tool_available(self, name: str) -> bool:
+        return is_tool_available(self.get_tool(name))
+
     def get_status(self, name: str) -> tuple[bool, bool, str, Path | None, str]:
-        tool = self.get_tool(name)
-        exists = is_tool_available(tool)
+        exists = is_tool_available(self.get_tool(name))
         local_version = ''
         path = None
         latest_version = ''

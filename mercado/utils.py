@@ -326,3 +326,16 @@ def get_host_operating_system() -> str:
 
 def get_host_architecture() -> str:
     return platform.machine()
+
+
+def run_once(f):
+    def wrapper(*args, **kwargs):
+        kwargs_tuple = tuple(sorted(kwargs.items()))
+        args_hashable = (args, kwargs_tuple)
+        h = hash(args_hashable)
+
+        if h not in wrapper.runs:
+            wrapper.runs[h] = True
+            return f(*args, **kwargs)
+    wrapper.runs = {}
+    return wrapper
