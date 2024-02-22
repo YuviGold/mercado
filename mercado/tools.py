@@ -24,6 +24,7 @@ TOOLS: dict[ToolVendor, list[Tool]] = {
         GitHubTool('compose', labels=(Label.VIRT, Label.DOCKER, Label.ORCHESTRATE), repository='docker/compose',
                    target=Path(environ.get('DOCKER_CONFIG', Path.home() / ".docker")) / "cli-plugins/docker-compose"),
         GitHubTool('k9s', labels=(Label.K8S,), repository='derailed/k9s'),
+        GitHubTool('k8sgpt', labels=(Label.K8S,), repository='k8sgpt-ai/k8sgpt'),
     ],
 
     Hashicorp(): [
