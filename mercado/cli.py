@@ -8,7 +8,7 @@ from rich.table import Table
 from typer import Context, Exit, Option, Typer
 
 from .tool_manager import manager
-from .utils import get_host_architecture, get_host_operating_system
+from .utils import get_host_architecture, get_host_operating_system, is_tool_available, run_once
 from .vendors.vendor import Label
 
 app = Typer()
@@ -17,7 +17,7 @@ console = Console()
 
 def pretty_status(exists, is_latest):
     if exists and not is_latest:
-        return ':arrow_double_up:'
+        return ':arrow_up_small:'
     return pretty_bool(exists)
 
 
@@ -32,17 +32,12 @@ def list_tools(filter_labels: list[Label] = Option(None, "--label", "-l"),
                with_labels: bool = Option(False),
                all: bool = Option(False)):
     table = Table(title="Mercado tools", header_style="bold magenta")
-    table.add_column("Name", style="bold")
 
-    if not names_only:
-        if verbose:
-            table.add_column("Vendor")
+    @run_once
+    def add_table_column(*args, **kwargs):
+        table.add_column(*args, **kwargs)
 
-        if with_labels:
-            table.add_column("Labels")
-        table.add_column("Installed")
-
-    for vendor, tools in manager.get_supported_tools(separate_vendors=verbose):
+    for _, tools in manager.get_supported_tools(separate_vendors=verbose):
         if verbose:
             table.add_section()
 
@@ -51,29 +46,33 @@ def list_tools(filter_labels: list[Label] = Option(None, "--label", "-l"),
                 if not any([label in tool.labels for label in filter_labels]):
                     continue
 
-            exists, is_latest, version, path, _ = manager.get_status(tool.name)
+            exists = is_tool_available(tool)
             if not exists and not all:
                 continue
 
-            if names_only:
-                table.add_row(tool.name)
-                continue
+            add_table_column("Name", style="bold")
+            cells = [tool.name]
 
-            exists_string = pretty_status(exists, is_latest)
+            if not names_only:
+                add_table_column("Installed")
+                cells.append(pretty_bool(exists))
 
-            if verbose:
-                if exists:
-                    exists_string += f' ({path} {version})'
+                if verbose:
+                    exists, is_latest, version, path, _ = manager.get_status(tool.name)
+                    add_table_column("Is Latest")
+                    cells.append(pretty_status(exists, is_latest))
+
+                    add_table_column("Version")
+                    cells.append(version)
+
+                    add_table_column("Path")
+                    cells.append(str(path))
 
                 if with_labels:
-                    table.add_row(tool.name, vendor, ','.join(map(lambda item: item.value, tool.labels)), exists_string)
-                else:
-                    table.add_row(tool.name, vendor, exists_string)
-            else:
-                if with_labels:
-                    table.add_row(tool.name, ','.join(map(lambda item: item.value, tool.labels)), exists_string)
-                else:
-                    table.add_row(tool.name, exists_string)
+                    add_table_column("Labels")
+                    cells.append(','.join(map(lambda item: item.value, tool.labels)))
+
+            table.add_row(*cells)
 
     console.print(table)
 
