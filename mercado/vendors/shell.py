@@ -26,8 +26,9 @@ class Shell(ToolVendor):
 
 
 class ShellRunner(Installer):
-    def __init__(self, name: str, version: str, os: str, arch: str,
-                 script: Callable[[str, str, str], str], env: dict[str, str]):
+    def __init__(
+        self, name: str, version: str, os: str, arch: str, script: Callable[[str, str, str], str], env: dict[str, str]
+    ):
         self.name = name
         self.version = version
         self.os = os
@@ -40,5 +41,6 @@ class ShellRunner(Installer):
         script += dedent(self._script(self.version, self.os, self.arch))
         with TemporaryDirectory() as tmp_dir:
             logging.debug(f"Running the following script in {tmp_dir}:\n{script}")
-            subprocess.check_call(script, env=self._env | {
-                                  'PATH': f"{os.environ['PATH']}:{INSTALL_DIR}"}, shell=True, cwd=tmp_dir)
+            subprocess.check_call(
+                script, env=self._env | {"PATH": f"{os.environ['PATH']}:{INSTALL_DIR}"}, shell=True, cwd=tmp_dir
+            )

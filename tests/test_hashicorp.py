@@ -1,4 +1,5 @@
 import pytest
+
 from mercado.vendors.hashicorp import Hashicorp
 from mercado.vendors.vendor import Tool
 

@@ -1,4 +1,5 @@
 import pytest
+
 from mercado.tool_manager import ToolManager
 
 

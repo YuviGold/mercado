@@ -17,27 +17,29 @@ console = Console()
 
 def pretty_status(exists, is_latest):
     if exists and not is_latest:
-        return ':arrow_up_small:'
+        return ":arrow_up_small:"
     return pretty_bool(exists)
 
 
 def pretty_bool(condition: bool) -> str:
-    return ':white_check_mark:' if condition else ':cross_mark:'
+    return ":white_check_mark:" if condition else ":cross_mark:"
 
 
-@app.command('list', help='List all available tools')
-def list_tools(filter_labels: list[Label] = Option(None, "--label", "-l"),
-               verbose: bool = Option(False),
-               names_only: bool = Option(False),
-               with_labels: bool = Option(False),
-               all: bool = Option(False)):
+@app.command("list", help="List all available tools")
+def list_tools(
+    filter_labels: list[Label] = Option(None, "--label", "-l"),
+    verbose: bool = Option(False, "--verbose", "-v"),
+    names_only: bool = Option(False),
+    with_labels: bool = Option(False),
+    show_all: bool = Option(False, "--all"),
+):
     table = Table(title="Mercado tools", header_style="bold magenta")
 
     @run_once
     def add_table_column(*args, **kwargs):
         table.add_column(*args, **kwargs)
 
-    for _, tools in manager.get_supported_tools(separate_vendors=verbose):
+    for _, tools in manager.get_supported_tools(separate_vendors=False):
         if verbose:
             table.add_section()
 
@@ -47,7 +49,7 @@ def list_tools(filter_labels: list[Label] = Option(None, "--label", "-l"),
                     continue
 
             exists = is_tool_available(tool)
-            if not exists and not all:
+            if not exists and not show_all:
                 continue
 
             add_table_column("Name", style="bold")
@@ -70,18 +72,20 @@ def list_tools(filter_labels: list[Label] = Option(None, "--label", "-l"),
 
                 if with_labels:
                     add_table_column("Labels")
-                    cells.append(','.join(map(lambda item: item.value, tool.labels)))
+                    cells.append(",".join(map(lambda item: item.value, tool.labels)))
 
             table.add_row(*cells)
 
     console.print(table)
 
 
-@app.command('install', help='Install a tool')
-def install_tool(names: list[str],
-                 os: str = Option(get_host_operating_system()),
-                 arch: str = Option(get_host_architecture()),
-                 dry_run: bool = Option(False, envvar='DRY_RUN')):
+@app.command("install", help="Install a tool")
+def install_tool(
+    names: list[str],
+    os: str = Option(get_host_operating_system()),
+    arch: str = Option(get_host_architecture()),
+    dry_run: bool = Option(False, envvar="DRY_RUN"),
+):
     for name in names:
         installer = manager.get_installer(name, os, arch)
         logging.debug(f"'{installer.name}' was found with version '{installer.version}'")
@@ -92,7 +96,7 @@ def install_tool(names: list[str],
             console.print(f":thumbs_up:\t'{name}' version {installer.version} is installed")
 
 
-@app.command('is-latest', help='Check if the current version is the latest one')
+@app.command("is-latest", help="Check if the current version is the latest one")
 def get_status(name: str):
     _, is_latest, local_version, _, latest_version = manager.get_status(name)
 
@@ -103,29 +107,27 @@ def get_status(name: str):
         console.print(f":thumbs_up:\tYou have the latest version of '{name}' ({local_version})")
 
 
-@app.command('show', help='Print information about the supported tool')
+@app.command("show", help="Print information about the supported tool")
 def show(name: str):
     exists, is_latest, local_version, path, latest_version = manager.get_status(name)
 
-    console.print(f'Name: {name}')
-    console.print(f'Status: {pretty_status(exists, is_latest)}')
+    console.print(f"Name: {name}")
+    console.print(f"Status: {pretty_status(exists, is_latest)}")
 
     if exists:
-        console.print(f'Local Version: {local_version}')
-        console.print(f'Path: {path}')
-    console.print(f'Remote Version: {latest_version}')
+        console.print(f"Local Version: {local_version}")
+        console.print(f"Path: {path}")
+    console.print(f"Remote Version: {latest_version}")
 
 
 def init_logger(default_level: int = logging.INFO):
-    LOGLEVEL = environ.get('LOGLEVEL', logging.getLevelName(default_level)).upper()
-    logging.basicConfig(level=LOGLEVEL,
-                        format='%(message)s',
-                        handlers=[RichHandler(show_level=False, show_path=False)])
+    loglevel = environ.get("LOGLEVEL", logging.getLevelName(default_level)).upper()
+    logging.basicConfig(level=loglevel, format="%(message)s", handlers=[RichHandler(show_level=False, show_path=False)])
 
 
 @app.callback()
 def cli_logging(ctx: Context):
-    if ctx.invoked_subcommand in ('show', 'is-latest'):
+    if ctx.invoked_subcommand in ("show", "is-latest"):
         init_logger(logging.ERROR)
     else:
         init_logger(logging.INFO)
@@ -135,5 +137,5 @@ def main():
     try:
         app()
     except ValueError as ex:
-        console.print(f':no_entry_sign:\t{ex}')
+        console.print(f":no_entry_sign:\t{ex}")
         exit(1)

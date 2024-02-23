@@ -5,4 +5,5 @@ set -o pipefail
 set -o errexit
 set -o xtrace
 
-find mercado -name '*.py' -exec autopep8 --max-line-length 120 -i {} \;
+poetry run ruff format .
+poetry run ruff check --fix-only .

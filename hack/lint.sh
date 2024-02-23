@@ -5,6 +5,8 @@ set -o pipefail
 set -o errexit
 set -o xtrace
 
-python3 -m flake8 --max-line-length 120 mercado tests
+poetry check
+poetry lock --check
+poetry run ruff check .
 find . -name '*.sh' -type f -not -path "./.git/*" -exec shellcheck {} +
 git diff --shortstat --exit-code

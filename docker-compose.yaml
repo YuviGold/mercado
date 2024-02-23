@@ -4,7 +4,7 @@ services:
   test:
     build:
       context: .
-      dockerfile: Dockerfile.build
+      dockerfile: build.Dockerfile
       network: host
     environment:
       - TEST
@@ -15,3 +15,5 @@ services:
       # Supporting AppImage artifacts in docker
       # https://github.com/AppImage/AppImageKit/issues/912#issuecomment-528669441
       - APPIMAGE_EXTRACT_AND_RUN=1
+    volumes:
+      - ${PWD}:/app

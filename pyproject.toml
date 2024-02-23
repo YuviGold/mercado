@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mercado"
-version = "0.2.0"
+version = "0.2.1"
 description = "All-In-One Development CLI Tools Multi-platform Marketplace"
 
 authors = [
@@ -10,7 +10,7 @@ authors = [
 repository = "https://github.com/YuviGold/mercado"
 readme = "README.md"
 
-keywords = ["cli", "devops"]
+keywords = ["cli", "devops", "automation"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -21,10 +21,9 @@ rich = ">=12.6,<14.0"
 typer = ">=0.6.1,<0.10.0"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.2.0"
-flake8 = ">=5.0.4,<8.0.0"
+pytest = "^8.0.1"
 cogapp = "^3.3.0"
-autopep8 = "^2.0.0"
+ruff = "^0.2.2"
 
 [tool.poetry.scripts]
 mercado = "mercado.cli:main"
@@ -32,3 +31,19 @@ mercado = "mercado.cli:main"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+    # Pyflakes
+    "F",
+    # Pycodestyle
+    "E",
+    "W",
+    "N", # pep8-naming
+    # isort
+    "I001",
+    "I002",
+]

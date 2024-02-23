@@ -39,9 +39,9 @@ class ToolManager:
 
     def get_installer(self, name: str, os: str, arch: str) -> Installer:
         version = None
-        if '@' in name:
-            version = name.split('@')[1]
-            name = name[:name.index('@')]
+        if "@" in name:
+            version = name.split("@")[1]
+            name = name[: name.index("@")]
 
         vendor, tool = self._get_tool(name)
         logging.debug(f"'{name}' is available by the '{vendor.__class__.__name__}' vendor")
@@ -58,9 +58,9 @@ class ToolManager:
 
     def get_status(self, name: str) -> tuple[bool, bool, str, Path | None, str]:
         exists = is_tool_available(self.get_tool(name))
-        local_version = ''
+        local_version = ""
         path = None
-        latest_version = ''
+        latest_version = ""
 
         if exists:
             local_version, path = get_local_version(self.get_tool(name))
