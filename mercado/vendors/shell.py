@@ -27,18 +27,24 @@ class Shell(ToolVendor):
 
 class ShellRunner(Installer):
     def __init__(
-        self, name: str, version: str, os: str, arch: str, script: Callable[[str, str, str], str], env: dict[str, str]
+        self,
+        name: str,
+        version: str,
+        operating_system: str,
+        arch: str,
+        install_script: Callable[[str, str, str], str],
+        env: dict[str, str],
     ):
         self.name = name
         self.version = version
-        self.os = os
+        self.os = operating_system
         self.arch = arch
-        self._script = script
+        self._install_script = install_script
         self._env = env
 
     def install(self):
         script = "set -o errexit"
-        script += dedent(self._script(self.version, self.os, self.arch))
+        script += dedent(self._install_script(self.version, self.os, self.arch))
         with TemporaryDirectory() as tmp_dir:
             logging.debug(f"Running the following script in {tmp_dir}:\n{script}")
             subprocess.check_call(
