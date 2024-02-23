@@ -92,6 +92,7 @@ def get_local_version(tool: Tool) -> tuple[str, Path]:
         path = which(Path(tool.name))
         if not path:
             raise ValueError(f"{tool.name} could not be found")
+        path = Path(path)
 
     return get_tool_version(path), path
 
