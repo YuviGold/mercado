@@ -8,7 +8,7 @@ from rich.table import Table
 from typer import Context, Exit, Option, Typer
 
 from .tool_manager import manager
-from .utils import get_host_architecture, get_host_operating_system, is_tool_available, run_once
+from .utils import get_host_architecture, get_host_operating_system, get_local_version, is_tool_available, run_once
 from .vendors.vendor import Label
 
 app = Typer()
@@ -96,8 +96,30 @@ def install_tool(
             console.print(f":thumbs_up:\t'{name}' version {installer.version} is installed")
 
 
+@app.command("uninstall", help="Uninstall a tool")
+def uninstall_tool(
+    names: list[str],
+    dry_run: bool = Option(False, envvar="DRY_RUN"),
+):
+    for name in names:
+        if not is_tool_available(manager.get_tool(name)):
+            console.print(f":no_entry_sign:\t'{name}' could not be found.")
+            continue
+
+        logging.info(f"Uninstalling '{name}'...")
+
+        if not dry_run:
+            _, path = get_local_version(manager.get_tool(name))
+            path.unlink()
+            console.print(f":thumbs_up:\t'{name}' is uninstalled")
+
+
 @app.command("is-latest", help="Check if the current version is the latest one")
 def get_status(name: str):
+    if not is_tool_available(manager.get_tool(name)):
+        console.print(f":no_entry_sign:\t'{name}' could not be found.")
+        raise Exit(code=1)
+
     _, is_latest, local_version, _, latest_version = manager.get_status(name)
 
     if not is_latest:
