@@ -1,4 +1,5 @@
 import pytest
+
 from mercado.vendors.github import GitHub, GitHubTool
 
 

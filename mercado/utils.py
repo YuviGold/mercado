@@ -21,12 +21,12 @@ from urllib3 import Retry
 
 from .vendors.vendor import Tool
 
-MATRIX_X86_64 = ('amd64', 'x86_64', '64bit')
-MATRIX_ARM64 = ('arm64', 'aarch64')
-MATRIX_MAC = ('darwin', 'macos')
+MATRIX_X86_64 = ("amd64", "x86_64", "64bit")
+MATRIX_ARM64 = ("arm64", "aarch64")
+MATRIX_MAC = ("darwin", "macos")
 INSTALL_DIR = Path.home() / ".mercado"
 PACKAGES_DIR = INSTALL_DIR / "packages"
-PKG_PAYLOAD_FILE = 'Payload'
+PKG_PAYLOAD_FILE = "Payload"
 CHUNK_SIZE = 1024
 REQUEST_MAX_TIMEOUT = 10
 STREAM_MAX_TIMEOUT = 300
@@ -63,15 +63,15 @@ def is_valid_os(expected: str, actual: str) -> bool:
 
 
 def is_amd64_arch(arch: str) -> bool:
-    return is_valid_architecture('amd64', arch)
+    return is_valid_architecture("amd64", arch)
 
 
 def is_arm64_arch(arch: str) -> bool:
-    return is_valid_architecture('arm64', arch)
+    return is_valid_architecture("arm64", arch)
 
 
 def is_darwin_os(os: str) -> bool:
-    return is_valid_os('darwin', os)
+    return is_valid_os("darwin", os)
 
 
 def contains_ignore_case(item: str, lst: Sequence[str]):
@@ -91,7 +91,7 @@ def get_local_version(tool: Tool) -> tuple[str, Path]:
     if not path.exists():
         path = which(Path(tool.name))
         if not path:
-            raise ValueError(f'{tool.name} could not be found')
+            raise ValueError(f"{tool.name} could not be found")
 
     return get_tool_version(path), path
 
@@ -102,22 +102,23 @@ def get_command_version(command: str) -> str:
     try:
         return search_version(output)
     except ValueError:
-        raise RuntimeError(f'Could not find a valid version for {command}')
+        raise RuntimeError(f"Could not find a valid version for {command}")
 
 
 def search_version(text: str) -> str:
     match = re.search(
-        r'([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?', text)
+        r"([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?", text
+    )
     if match:
         return match[0]
-    raise ValueError('version could not been found in {text}')
+    raise ValueError("version could not been found in {text}")
 
 
 def get_tool_version(path: Path, silent: bool = False) -> str:
     if not which(path):
         raise FileNotFoundError(path)
 
-    commands = [f'{path} --version', f'{path} version']
+    commands = [f"{path} --version", f"{path} version"]
     for command in commands:
         try:
             return get_command_version(command)
@@ -144,16 +145,16 @@ def is_tool_available_in_path(name: str) -> bool:
 def download_url(name: str, url: str, dest: Path):
     dest.parent.mkdir(exist_ok=True, parents=True)
 
-    logging.debug(f'Download {url}')
+    logging.debug(f"Download {url}")
 
     with create_session().get(url, stream=True, timeout=STREAM_MAX_TIMEOUT) as r:
-        total_length = int(r.headers.get('content-length', 0))
+        total_length = int(r.headers.get("content-length", 0))
 
         temp_file = Path(gettempdir()) / basename(url)
 
         logging.info(f"Downloading '{name}' to {temp_file} (size: {naturalsize(total_length)})")
 
-        with temp_file.open('wb') as file, Progress() as progress:
+        with temp_file.open("wb") as file, Progress() as progress:
             task = progress.add_task("Downloading...", total=total_length)
             for data in r.iter_content(chunk_size=CHUNK_SIZE):
                 if data:
@@ -183,7 +184,7 @@ def is_archive(path: str) -> bool:
 
 
 def extract_file_from_archive(path: Path, file_name: str) -> Path:
-    unpack_dest = path.with_suffix('')
+    unpack_dest = path.with_suffix("")
     unpack_dest.mkdir(exist_ok=True)
     logging.info(f"Unpacking {path} to {unpack_dest}")
     unpack_archive(path, extract_dir=unpack_dest)
@@ -193,11 +194,11 @@ def extract_file_from_archive(path: Path, file_name: str) -> Path:
 
 
 def is_dmg(path: str) -> bool:
-    return path.endswith('.dmg')
+    return path.endswith(".dmg")
 
 
 def extract_file_from_dmg(path: Path, file_name: str) -> (Path, bool):
-    unpack_dest = path.with_suffix('')
+    unpack_dest = path.with_suffix("")
     unpack_dest.mkdir(exist_ok=True)
     logging.info(f"Unpacking {path} to {unpack_dest}")
 
@@ -254,25 +255,27 @@ def extract_file_from_pkg(path: Path, file_name: str) -> Path:
 
 def create_session():
     session = Session()
-    retries = Retry(total=5,
-                    backoff_factor=1,
-                    status_forcelist=[
-                        HTTPStatus.TOO_MANY_REQUESTS.value,
-                        HTTPStatus.INTERNAL_SERVER_ERROR.value,
-                        HTTPStatus.BAD_GATEWAY.value,
-                        HTTPStatus.SERVICE_UNAVAILABLE.value,
-                        HTTPStatus.GATEWAY_TIMEOUT.value,
-                    ])
+    retries = Retry(
+        total=5,
+        backoff_factor=1,
+        status_forcelist=[
+            HTTPStatus.TOO_MANY_REQUESTS.value,
+            HTTPStatus.INTERNAL_SERVER_ERROR.value,
+            HTTPStatus.BAD_GATEWAY.value,
+            HTTPStatus.SERVICE_UNAVAILABLE.value,
+            HTTPStatus.GATEWAY_TIMEOUT.value,
+        ],
+    )
     adapter = HTTPAdapter(max_retries=retries)
-    session.mount('http://', adapter)
-    session.mount('https://', adapter)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
     session.request = partial(session.request, timeout=REQUEST_MAX_TIMEOUT)
     return session
 
 
 def filter_artifacts(names: list[str]) -> list[str]:
-    DROP_NAMES = ('checksum', 'sha', '.sig', '.pem', '.sbom', 'key')
-    return list(filter(lambda name: all([substr not in name for substr in DROP_NAMES]), names))
+    drop_names = ("checksum", "sha", ".sig", ".pem", ".sbom", "key")
+    return list(filter(lambda name: all([substr not in name for substr in drop_names]), names))
 
 
 def choose_url(urls: list[str]) -> str:
@@ -308,7 +311,7 @@ def _search_url(urls: list[str], func: Callable[[str], bool]) -> str:
     if len(ls) == 1:
         return ls[0]
 
-    return ''
+    return ""
 
 
 @cache
@@ -337,5 +340,6 @@ def run_once(f):
         if h not in wrapper.runs:
             wrapper.runs[h] = True
             return f(*args, **kwargs)
+
     wrapper.runs = {}
     return wrapper

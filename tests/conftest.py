@@ -1,4 +1,5 @@
 import pytest
+
 from mercado.tool_manager import ToolManager
 from mercado.utils import get_host_architecture, get_host_operating_system
 from mercado.vendors.github import GitHub

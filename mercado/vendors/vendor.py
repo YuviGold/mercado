@@ -22,7 +22,7 @@ class Label(Enum):
 @dataclass(frozen=True)
 class Tool:
     name: str
-    labels: tuple[Label] = field(default_factory=tuple)
+    labels: tuple[Label, ...] = field(default_factory=tuple)
     target: Path = None
 
 
