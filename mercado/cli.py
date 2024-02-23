@@ -68,7 +68,8 @@ def list_tools(
                     cells.append(version)
 
                     add_table_column("Path")
-                    cells.append(str(path))
+                    if path:
+                        cells.append(str(path))
 
                 if with_labels:
                     add_table_column("Labels")

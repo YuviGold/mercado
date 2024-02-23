@@ -1,6 +1,8 @@
 # Mercado
 All-In-One Development CLI Tools Multi-platform Marketplace
 
+<img src="docs/demo.gif" width="900"/>
+
 Stop memorizing whether that's `apt install` or `brew` or any other package manager that takes too long whenever only to get an outdated tool - and use `mercado` instead!
 
 All the most used tools by developers like `docker`, `terraform`, and `kubectl`.
@@ -285,9 +287,27 @@ gh workflow run Test --ref <branch_name> -f debug_enabled=true
 
 ## Generate docs
 
+Generate the README with [cog](https://github.com/nedbat/cog)
+
 1. Install dist locally
 1. Run inside virtualenv
 
 ```bash
 make docs
 ```
+
+Record video with [asciinema](https://asciinema.org/)
+
+```bash
+asciinema rec docs/demo.cast
+
+mercado is-latest kind
+mercado install kind
+mercado show kind
+mercado list --label k8s --verbose --all
+
+ctrl + d
+```
+
+Then use [gifcast](https://dstein64.github.io/gifcast/) to convert the `.cast` file to `.gif`
+shave 10 rows from the bottom and 5 from the right.
