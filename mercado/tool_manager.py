@@ -65,7 +65,10 @@ class ToolManager:
         if exists:
             local_version, path = get_local_version(self.get_tool(name))
             latest_version = self.get_latest_version(name)
-        return exists, local_version in latest_version, local_version, path, latest_version
+
+        # In is_latest release candidates are ignored
+        is_latest = local_version.split('-rc')[0] in latest_version.split('-rc')[0]
+        return exists, is_latest, local_version, path, latest_version
 
 
 manager = ToolManager()
