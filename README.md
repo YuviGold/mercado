@@ -190,4 +190,4 @@ $ mercado list --label k8s --with-labels --all
 
 ## Contributing
 
-Please see the [CONTRIBUTING guide](https://github.com/alexellis/arkade/blob/master/CONTRIBUTING.md).
+Please see the [CONTRIBUTING guide](https://github.com/YuviGold/mercado/blob/master/CONTRIBUTING.md).
