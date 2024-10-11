@@ -6,7 +6,7 @@ set -o errexit
 set -o xtrace
 
 if [ ! -x "$(command -v poetry)" ]; then
-    python3 -m pip install "poetry==1.4.2"
+    python3 -m pip install "poetry==1.8.3"
     poetry config virtualenvs.create false
 fi
 

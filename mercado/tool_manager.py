@@ -67,7 +67,7 @@ class ToolManager:
             latest_version = self.get_latest_version(name)
 
         # In is_latest release candidates are ignored
-        is_latest = local_version.split('-rc')[0] in latest_version.split('-rc')[0]
+        is_latest = local_version.split("-rc")[0] in latest_version.split("-rc")[0]
         return exists, is_latest, local_version, path, latest_version
 
 
