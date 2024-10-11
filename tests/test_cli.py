@@ -5,7 +5,8 @@ from mercado.tool_manager import ToolManager
 
 
 @pytest.mark.parametrize(
-    "vendor,tool", [(vendor, tools[0].name) for vendor, tools in ToolManager().get_supported_tools()]
+    "vendor,tool",
+    [(vendor, tools[0].name) for vendor, tools in ToolManager().get_supported_tools()],
 )
 def test_download_invalid_version(vendor: str, tool: str, os: str, arch: str):
     with pytest.raises(BaseException):

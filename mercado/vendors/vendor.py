@@ -32,12 +32,12 @@ class Installer:
     version: str
 
     def install(self):
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 class ToolVendor:
     def get_latest_version(self, tool: Tool) -> str:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def get_installer(self, tool: Tool, version: str, os: str, arch: str) -> Installer:
-        raise NotImplementedError()
+        raise NotImplementedError

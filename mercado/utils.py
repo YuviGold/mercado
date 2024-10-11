@@ -49,16 +49,12 @@ def get_operating_system_variations(os: str) -> Sequence[str]:
 
 
 def is_valid_architecture(expected: str, actual: str) -> bool:
-    """
-    Equalize architectures that their name does not necessarily match
-    """
+    """Equalize architectures that their name does not necessarily match"""
     return contains_ignore_case(actual, get_architecture_variations(expected))
 
 
 def is_valid_os(expected: str, actual: str) -> bool:
-    """
-    Equalize operating system that their name does not necessarily match
-    """
+    """Equalize operating system that their name does not necessarily match"""
     return contains_ignore_case(actual, get_operating_system_variations(expected))
 
 
@@ -98,7 +94,9 @@ def get_local_version(tool: Tool) -> tuple[str, Path]:
 
 
 def get_command_version(command: str) -> str:
-    res = subprocess.run(command.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=SUBPROCSES_TIMEOUT)
+    res = subprocess.run(
+        command.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=SUBPROCSES_TIMEOUT, check=False
+    )
     output = res.stdout.decode().strip()
     try:
         return search_version(output)
@@ -108,7 +106,8 @@ def get_command_version(command: str) -> str:
 
 def search_version(text: str) -> str:
     match = re.search(
-        r"([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?", text
+        r"([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?",
+        text,
     )
     if match:
         return match[0]
@@ -214,11 +213,10 @@ def extract_file_from_dmg(path: Path, file_name: str) -> (Path, bool):
             assert len(app_files) == 1, f"There should be one .app file in the dmg with the name {file_name}"
             return Path(app_files[0]), False
 
-        elif pkg_files:
+        if pkg_files:
             assert len(pkg_files) == 1, f"There should be one .pkg file in the dmg with the name {file_name}"
             return extract_file_from_pkg(Path(pkg_files[0]), file_name), True
-        else:
-            raise Exception("No .app or .pkg files found in the DMG!")
+        raise Exception("No .app or .pkg files found in the DMG!")
 
     finally:
         # Unmount the DMG

@@ -126,8 +126,7 @@ def get_status(name: str):
     if not is_latest:
         console.print(f":thumbs_down:\t'{name}' version '{latest_version}' is available! (current: {local_version})")
         raise Exit(code=1)
-    else:
-        console.print(f":thumbs_up:\tYou have the latest version of '{name}' ({local_version})")
+    console.print(f":thumbs_up:\tYou have the latest version of '{name}' ({local_version})")
 
 
 @app.command("show", help="Print information about the supported tool")

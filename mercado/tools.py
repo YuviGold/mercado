@@ -83,28 +83,28 @@ TOOLS: dict[ToolVendor, list[Tool]] = {
                     curl "https://download.docker.com/mac/static/stable/${{arch}}/docker-{version.lstrip('v')}.tgz" \\
                         -o docker.tgz
                     tar -xf docker.tgz
-                    find . -type f -name docker -exec mv {{}} {str(INSTALL_DIR / "docker")} \\;
+                    find . -type f -name docker -exec mv {{}} {INSTALL_DIR / "docker"!s} \\;
                   """,
         ),
         ShellTool(
             "aws",
             labels=(Label.CLOUD,),
             get_latest_version=lambda: search_version(
-                fetch_url("https://awscli.amazonaws.com/latest/", raise_for_status=False)
+                fetch_url("https://awscli.amazonaws.com/latest/", raise_for_status=False),
             ),
             download_script=lambda version, os, arch: f"""
                   curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-{version}.zip" -o "awscliv2.zip"
                   unzip -q awscliv2.zip
-                  ./aws/install --bin-dir {str(INSTALL_DIR)} --install-dir {str(INSTALL_DIR / "aws-cli")} --update
+                  ./aws/install --bin-dir {INSTALL_DIR!s} --install-dir {INSTALL_DIR / "aws-cli"!s} --update
                   """
             if not is_darwin_os(os)
             else f"""
                   curl "https://awscli.amazonaws.com/AWSCLIV2-{version}.pkg" -o "AWSCLIV2.pkg"
                   tar -xf AWSCLIV2.pkg
-                  pkg_dir={str(PACKAGES_DIR / "aws-cli")}
+                  pkg_dir={PACKAGES_DIR / "aws-cli"!s}
                   mkdir -p ${{pkg_dir}}
                   find . -type f -name Payload -exec tar -xf {{}} -C ${{pkg_dir}} \\;
-                  ln -f -s `find ${{pkg_dir}} -type f -name aws` {str(INSTALL_DIR / "aws")}
+                  ln -f -s `find ${{pkg_dir}} -type f -name aws` {INSTALL_DIR / "aws"!s}
                   """,
         ),
     ],

@@ -48,5 +48,8 @@ class ShellRunner(Installer):
         with TemporaryDirectory() as tmp_dir:
             logging.debug(f"Running the following script in {tmp_dir}:\n{script}")
             subprocess.check_call(
-                script, env=self._env | {"PATH": f"{os.environ['PATH']}:{INSTALL_DIR}"}, shell=True, cwd=tmp_dir
+                script,
+                env=self._env | {"PATH": f"{os.environ['PATH']}:{INSTALL_DIR}"},
+                shell=True,
+                cwd=tmp_dir,
             )
