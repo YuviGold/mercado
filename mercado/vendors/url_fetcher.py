@@ -23,7 +23,12 @@ class URLFetcherTool(Tool):
 
 class URLFetcher(ToolVendor):
     def _check_urls(
-        self, tool: URLFetcherTool, os: str, arch: str, version: str, url_template: Callable[[str, str], str]
+        self,
+        tool: URLFetcherTool,
+        os: str,
+        arch: str,
+        version: str,
+        url_template: Callable[[str, str], str],
     ) -> str:
         urls = []
         for arch in get_architecture_variations(arch):

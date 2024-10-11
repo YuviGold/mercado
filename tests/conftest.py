@@ -7,26 +7,26 @@ from mercado.vendors.hashicorp import Hashicorp
 from mercado.vendors.vendor import ToolVendor
 
 
-@pytest.fixture()
+@pytest.fixture
 def os():
-    yield get_host_operating_system()
+    return get_host_operating_system()
 
 
-@pytest.fixture()
+@pytest.fixture
 def arch():
-    yield get_host_architecture()
+    return get_host_architecture()
 
 
-@pytest.fixture()
+@pytest.fixture
 def hashicorp() -> ToolVendor:
-    yield Hashicorp()
+    return Hashicorp()
 
 
-@pytest.fixture()
+@pytest.fixture
 def github() -> ToolVendor:
-    yield GitHub()
+    return GitHub()
 
 
-@pytest.fixture()
+@pytest.fixture
 def toolmanager() -> ToolManager:
-    yield ToolManager()
+    return ToolManager()

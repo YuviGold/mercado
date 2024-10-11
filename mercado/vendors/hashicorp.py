@@ -22,7 +22,7 @@ class Hashicorp(ToolVendor):
 
         if version:
             res = create_session().get(
-                f"https://api.releases.hashicorp.com/v1/releases/{name}/{version}?license_class=oss"
+                f"https://api.releases.hashicorp.com/v1/releases/{name}/{version}?license_class=oss",
             )
             if res.status_code == HTTPStatus.NOT_FOUND.value:
                 raise ValueError(f"version {version} was not found for {name}")
@@ -43,7 +43,8 @@ class Hashicorp(ToolVendor):
 
         for item in builds:
             if is_valid_os(expected=os, actual=item["os"]) and is_valid_architecture(
-                expected=arch, actual=item["arch"]
+                expected=arch,
+                actual=item["arch"],
             ):
                 valid_assets_urls.append(item["url"])
 
