@@ -1,22 +1,23 @@
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum, auto
 from pathlib import Path
 
 
-class Label(Enum):
-    DOCS = "docs"
-    SECURITY = "security"
-    IAC = "iac"
-    VCS = "vcs"
-    VIRT = "virt"
-    CICD = "ci/cd"
-    STORAGE = "storage"
-    NETWORK = "network"
-    ORCHESTRATE = "orchestration"
-    CLOUD = "cloud"
+class Label(StrEnum):
+    DOCS = auto()
+    SECURITY = auto()
+    IAC = auto()
+    VCS = auto()
+    VIRT = auto()
+    CICD = auto()
+    STORAGE = auto()
+    NETWORK = auto()
+    ORCHESTRATE = auto()
+    CLOUD = auto()
+    BUILD = auto()
 
-    DOCKER = "docker"
-    K8S = "k8s"
+    DOCKER = auto()
+    K8S = auto()
 
 
 @dataclass(frozen=True)

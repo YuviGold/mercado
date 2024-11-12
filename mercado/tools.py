@@ -32,6 +32,7 @@ TOOLS: dict[ToolVendor, list[Tool]] = {
         GitHubTool("k9s", labels=(Label.K8S,), repository="derailed/k9s"),
         GitHubTool("k8sgpt", labels=(Label.K8S,), repository="k8sgpt-ai/k8sgpt"),
         GitHubTool("colima", labels=(Label.DOCKER,), repository="abiosoft/colima"),
+        GitHubTool("task", labels=(Label.BUILD,), repository="go-task/task"),
     ],
     Hashicorp(): [
         Tool("vagrant", labels=(Label.VIRT,)),
