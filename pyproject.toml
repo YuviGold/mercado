@@ -1,3 +1,8 @@
+[project]
+name = "mercado"
+requires-python = ">=3.11"
+
+
 [tool.poetry]
 name = "mercado"
 version = "0.2.1"
@@ -13,17 +18,17 @@ readme = "README.md"
 keywords = ["cli", "devops", "automation"]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = ">=3.11"
 
 humanize = "^4.11.0"
 requests = "^2.32.3"
-rich = "^13.9.2"
-typer = "^0.12.5"
+rich = "^13.9.4"
+typer = "^0.13.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.3"
 cogapp = "^3.4.1"
-ruff = "^0.6.9"
+ruff = "^0.7.3"
 
 [tool.poetry.scripts]
 mercado = "mercado.cli:main"
