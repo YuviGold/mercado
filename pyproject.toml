@@ -28,7 +28,7 @@ typer = "^0.13.0"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.3"
 cogapp = "^3.4.1"
-ruff = "^0.7.3"
+ruff = ">=0.7.3,<0.9.0"
 
 [tool.poetry.scripts]
 mercado = "mercado.cli:main"
