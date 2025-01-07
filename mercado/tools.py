@@ -94,13 +94,13 @@ TOOLS: dict[ToolVendor, list[Tool]] = {
                 fetch_url("https://awscli.amazonaws.com/latest/", raise_for_status=False),
             ),
             download_script=lambda version, os, arch: f"""
-                  curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-{version}.zip" -o "awscliv2.zip"
+                  curl "https://awscli.amazonaws.com/awscli-exe-linux-{arch}-{version}.zip" -o "awscliv2.zip"
                   unzip -q awscliv2.zip
                   ./aws/install --bin-dir {INSTALL_DIR!s} --install-dir {INSTALL_DIR / "aws-cli"!s} --update
                   """
             if not is_darwin_os(os)
             else f"""
-                  curl "https://awscli.amazonaws.com/AWSCLIV2-{version}.pkg" -o "AWSCLIV2.pkg"
+                    curl "https://awscli.amazonaws.com/AWSCLIV2-{version}.pkg" -o "AWSCLIV2.pkg"
                   tar -xf AWSCLIV2.pkg
                   pkg_dir={PACKAGES_DIR / "aws-cli"!s}
                   mkdir -p ${{pkg_dir}}
