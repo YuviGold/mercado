@@ -81,8 +81,8 @@ TOOLS: dict[ToolVendor, list[Tool]] = {
                   """
             if not is_darwin_os(os)
             else f"""
-                    arch={'aarch64' if is_arm64_arch(arch) else 'x86_64'}
-                    curl "https://download.docker.com/mac/static/stable/${{arch}}/docker-{version.lstrip('v')}.tgz" \\
+                    arch={"aarch64" if is_arm64_arch(arch) else "x86_64"}
+                    curl "https://download.docker.com/mac/static/stable/${{arch}}/docker-{version.lstrip("v")}.tgz" \\
                         -o docker.tgz
                     tar -xf docker.tgz
                     find . -type f -name docker -exec mv {{}} {INSTALL_DIR / "docker"!s} \\;

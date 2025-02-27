@@ -17,7 +17,7 @@ ENV \
 RUN git config --global --add safe.directory '*'
 
 WORKDIR /app
-COPY Makefile poetry.lock pyproject.toml /app/
+COPY README.md Makefile poetry.lock pyproject.toml /app/
 COPY hack/deps.sh /app/hack/deps.sh
 
 RUN --mount=type=cache,mode=0777,target=$POETRY_CACHE_DIR \

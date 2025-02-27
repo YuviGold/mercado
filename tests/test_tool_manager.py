@@ -2,6 +2,10 @@ import pytest
 
 from mercado.tool_manager import ToolManager
 
+not_supported = [
+    ("vagrant", "linux", "aarch64"),
+]
+
 
 def test_get_installer_invalid_tool(toolmanager: ToolManager, os: str, arch: str):
     with pytest.raises(ValueError):
@@ -10,5 +14,8 @@ def test_get_installer_invalid_tool(toolmanager: ToolManager, os: str, arch: str
 
 @pytest.mark.parametrize("tool", [t.name for _, tools in ToolManager().get_supported_tools() for t in tools])
 def test_get_installer_happy_flow(toolmanager: ToolManager, tool: str, os: str, arch: str):
+    if (tool, os, arch) in not_supported:
+        pytest.skip(f"{tool} is not supported on {os} {arch}")
+
     installer = toolmanager.get_installer(tool, os, arch)
     assert toolmanager.get_installer(f"{tool}@{installer.version}", os, arch) == installer
