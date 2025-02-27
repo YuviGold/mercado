@@ -280,6 +280,9 @@ def filter_artifacts(names: list[str]) -> list[str]:
 def choose_url(urls: list[str]) -> str:
     urls = filter_artifacts(urls)
 
+    if len(urls) == 1:
+        return urls[0]
+
     # Priority #1 - without suffix
     if url := _search_url(urls, no_suffix):
         return url
