@@ -12,11 +12,8 @@ jobs:
     - uses: actions/setup-python@v5
       with:
         python-version: '3.11'
-    - name: Install and configure Poetry
-      uses: snok/install-poetry@v1
-      with:
-        version: 1.2.2
-        virtualenvs-create: false
-    - run: |
-        poetry config pypi-token.pypi ${{ secrets.PYPI_API_TOKEN }}
-        make deploy
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+    - run: make deploy
+      env:
+        UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}

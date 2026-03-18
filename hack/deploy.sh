@@ -5,5 +5,4 @@ set -o pipefail
 set -o errexit
 set -o xtrace
 
-# python3 -m twine upload --verbose dist/*
-poetry publish
+uv publish

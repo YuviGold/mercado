@@ -5,5 +5,5 @@ set -o pipefail
 set -o errexit
 set -o xtrace
 
-poetry run ruff format .
-poetry run ruff check --fix-only .
+uv run ruff format .
+uv run ruff check --fix-only .

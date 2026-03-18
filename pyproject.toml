@@ -1,41 +1,37 @@
 [project]
 name = "mercado"
-requires-python = ">=3.11"
-
-
-[tool.poetry]
-name = "mercado"
 version = "0.2.1"
 description = "All-In-One Development CLI Tools Multi-platform Marketplace"
-
+requires-python = ">=3.11"
+readme = "README.md"
+keywords = ["cli", "devops", "automation"]
 authors = [
-    "YuviGold"
+    { name = "YuviGold" },
 ]
 
-repository = "https://github.com/YuviGold/mercado"
-readme = "README.md"
+dependencies = [
+    "humanize>=4.11.0",
+    "requests>=2.32.3",
+    "rich>=13.9.4",
+    "typer>=0.15.1",
+]
 
-keywords = ["cli", "devops", "automation"]
+[project.urls]
+Repository = "https://github.com/YuviGold/mercado"
 
-[tool.poetry.dependencies]
-python = ">=3.11"
-
-humanize = "^4.11.0"
-requests = "^2.32.3"
-rich = "^13.9.4"
-typer = "^0.15.1"
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.3.4"
-cogapp = "^3.4.1"
-ruff = "^0.8.6"
-
-[tool.poetry.scripts]
+[project.scripts]
 mercado = "mercado.cli:main"
 
+[dependency-groups]
+dev = [
+    "pytest>=8.3.4",
+    "cogapp>=3.4.1",
+    "ruff>=0.8.6",
+]
+
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.ruff]
 line-length = 120

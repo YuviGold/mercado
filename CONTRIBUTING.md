@@ -64,7 +64,7 @@ LOGLEVEL=debug make test
 ### Run locally
 
 ```bash
-poetry run mercado --help
+uv run mercado --help
 ```
 
 ### Install dist locally
