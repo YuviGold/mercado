@@ -15,7 +15,7 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 RUN git config --global --add safe.directory '*'
 
 WORKDIR /app
-COPY Makefile uv.lock pyproject.toml /app/
+COPY Makefile uv.lock pyproject.toml README.md /app/
 COPY hack/deps.sh /app/hack/deps.sh
 
 RUN --mount=type=cache,mode=0777,target=$UV_CACHE_DIR \

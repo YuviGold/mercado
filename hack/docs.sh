@@ -5,4 +5,4 @@ set -o pipefail
 set -o errexit
 set -o xtrace
 
-cog -r README.md
+uv run cog -r README.md
