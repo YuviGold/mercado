@@ -9,4 +9,4 @@ if [ ! -x "$(command -v uv)" ]; then
     curl -LsSf https://astral.sh/uv/install.sh | sh
 fi
 
-uv sync --verbose
+uv sync --verbose --no-install-project
