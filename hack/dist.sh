@@ -5,5 +5,4 @@ set -o pipefail
 set -o errexit
 set -o xtrace
 
-# ./setup.py bdist_wheel
-poetry build
+uv build

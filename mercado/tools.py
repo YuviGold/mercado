@@ -34,6 +34,7 @@ TOOLS: dict[ToolVendor, list[Tool]] = {
         GitHubTool("colima", labels=(Label.DOCKER,), repository="abiosoft/colima"),
         GitHubTool("task", labels=(Label.BUILD,), repository="go-task/task"),
         GitHubTool("sops", labels=(Label.SECURITY,), repository="getsops/sops"),
+        GitHubTool("kustomize", labels=(Label.K8S,), repository="kubernetes-sigs/kustomize"),
     ],
     Hashicorp(): [
         Tool("vagrant", labels=(Label.VIRT,)),

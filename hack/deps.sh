@@ -5,9 +5,8 @@ set -o pipefail
 set -o errexit
 set -o xtrace
 
-if [ ! -x "$(command -v poetry)" ]; then
-    python3 -m pip install "poetry==1.8.3"
-    poetry config virtualenvs.create false
+if [ ! -x "$(command -v uv)" ]; then
+    curl -LsSf https://astral.sh/uv/install.sh | sh
 fi
 
-poetry install --verbose --no-interaction --no-ansi
+uv sync --verbose

@@ -38,16 +38,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      # Installing python directly due to poetry issue with upstream python
-      # https://github.com/python-poetry/poetry/issues/7343
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install and configure Poetry
-        uses: snok/install-poetry@v1
-        with:
-          version: 1.8.3
-          virtualenvs-create: false
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
       - name: Install dependencies
         run: |
           make deps
@@ -62,4 +57,3 @@ jobs:
         run: make _test
         env:
           GITHUB_TOKEN: ${{ github.token }}
-
